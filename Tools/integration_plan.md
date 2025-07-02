@@ -26,3 +26,45 @@ To improve compatibility we added stub handlers for the missing endpoints.  They
 - aliases `/aircon/get_year_power` and `/aircon/get_week_power`
 
 These stubs provide a foundation for future development.  Implementing full behaviour will require referencing hardware capabilities and extending the control logic in `Faikin.c`.
+
+## Task breakdown
+
+The [S21 protocol documentation](../Manuals/S21.md) describes how values are
+read from and written to the air-con over the serial port.  Each HTTP endpoint
+below should eventually translate its parameters into the appropriate S21
+messages so that Faikin mirrors the official modules.
+
+1. **Remote method**
+   - `/common/get_remote_method` should report the currently configured remote
+     access policy (e.g. *home only* or *anywhere*).
+   - `/common/set_remote_method` must parse the `method` query parameter and send
+     the matching `D` command to update the unit.
+
+2. **Timer handling**
+   - `/aircon/get_timer` and `/aircon/set_timer` map to the `D3/G3` payload used
+     for timer scheduling.
+   - `/aircon/get_program` and `/aircon/set_program` extend this with weekly
+     programmes.
+
+3. **Target and pricing**
+   - `/aircon/get_target` and `/aircon/set_target` expose the S21 set-point
+     (`F1/D1`).
+   - `/aircon/get_price` and `/aircon/set_price` manipulate the energy price
+     fields where supported.
+
+4. **Notification and region**
+   - `/common/get_notify` and `/common/set_notify` should enable or disable
+     status push notifications.
+   - `/common/set_regioncode` and `/common/set_led` write to the appropriate S21
+     flags controlling region and indicator LED behaviour.
+
+5. **Reboot and power history**
+   - `/common/reboot` already reboots the ESP32 after returning `ret=OK`.
+   - `/aircon/get_year_power` and `/aircon/get_week_power` return energy usage
+     statistics derived from the `GM` payload.
+
+6. **Hardware auto-detection**
+   - When connecting to a unit for the first time Faikin probes the serial port
+     using S21, X50A and CN_WIRED sequences.  Extending this logic should allow
+     detection of hardware features (e.g. fan modes) so that HTTP replies always
+     reflect the underlying capabilities.
