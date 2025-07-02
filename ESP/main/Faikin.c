@@ -178,6 +178,9 @@ static float target_temp = 21.0;      // Stored target temperature for legacy AP
 static float energy_price = 0.0;      // Stored energy price for legacy API
 static char region[8] = "eu";         // Stored region code for legacy API
 static uint8_t led_state = 1;         // Stored LED setting for legacy API
+static char timer_state[96] = "";     // Stored /set_timer parameters
+static char program_state[96] = "";   // Stored /set_program parameters
+static char scdl_timer_state[96] = "";// Stored /set_scdltimer parameters
 
 static int
 uart_enabled (void)
@@ -2605,6 +2608,8 @@ static esp_err_t
 legacy_web_get_timer (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();          // No timer functionality yet
+   if (*timer_state)
+      jo_string (j, "state", timer_state);
    return legacy_send (req, &j);
 }
 
@@ -2616,7 +2621,14 @@ legacy_web_set_timer (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
-      jo_free (&j);                // Ignore parameters for now
+   {
+      size_t len = httpd_req_get_url_query_len (req);
+      if (len >= sizeof (timer_state))
+         len = sizeof (timer_state) - 1;
+      if (httpd_req_get_url_query_str (req, timer_state, len + 1) != ESP_OK)
+         timer_state[0] = 0;
+      jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
@@ -2686,6 +2698,8 @@ static esp_err_t
 legacy_web_get_program (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();
+   if (*program_state)
+      jo_string (j, "state", program_state);
    return legacy_send (req, &j);
 }
 
@@ -2698,19 +2712,11 @@ legacy_web_set_program (httpd_req_t * req)
       err = "Query failed";
    else
    {
-      if (jo_find (j, "led") || jo_find (j, "enable"))
-      {
-         char *v = jo_strdup (j);
-         if (v)
-         {
-            led_state = atoi (v) ? 1 : 0;
-            jo_t s = jo_object_alloc();
-            jo_int (s, "led", led_state);
-            revk_settings_store (s, NULL, 1);
-            jo_free (&s);
-            free (v);
-         }
-      }
+      size_t len = httpd_req_get_url_query_len (req);
+      if (len >= sizeof (program_state))
+         len = sizeof (program_state) - 1;
+      if (httpd_req_get_url_query_str (req, program_state, len + 1) != ESP_OK)
+         program_state[0] = 0;
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2720,6 +2726,8 @@ static esp_err_t
 legacy_web_get_scdltimer (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();
+   if (*scdl_timer_state)
+      jo_string (j, "state", scdl_timer_state);
    return legacy_send (req, &j);
 }
 
@@ -2731,7 +2739,14 @@ legacy_web_set_scdltimer (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      size_t len = httpd_req_get_url_query_len (req);
+      if (len >= sizeof (scdl_timer_state))
+         len = sizeof (scdl_timer_state) - 1;
+      if (httpd_req_get_url_query_str (req, scdl_timer_state, len + 1) != ESP_OK)
+         scdl_timer_state[0] = 0;
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
@@ -2838,7 +2853,22 @@ legacy_web_set_led (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "led") || jo_find (j, "enable"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            led_state = atoi (v) ? 1 : 0;
+            jo_t s = jo_object_alloc();
+            jo_int (s, "led", led_state);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
