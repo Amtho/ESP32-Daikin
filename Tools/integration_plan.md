@@ -68,3 +68,8 @@ messages so that Faikin mirrors the official modules.
      using S21, X50A and CN_WIRED sequences.  Extending this logic should allow
      detection of hardware features (e.g. fan modes) so that HTTP replies always
      reflect the underlying capabilities.
+
+## Progress
+
+- [x] `/common/get_remote_method` and `/common/set_remote_method` store and
+  report the current access policy.
