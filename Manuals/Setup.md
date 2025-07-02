@@ -91,7 +91,7 @@ If you've forgotten your login credentials or, for some reason, you are denied a
 
 - A USB to serial converter (such as this one: ![Amazon Link](https://amzn.eu/d/5VDxz50) or ![Tasmotizer-PCB](https://github.com/revk/Tasmotizer-PCB)).
 - Some Dupont wires.
-- Download the correct firmware binaries for your device (PICO, S1, or S3) from this ![link](https://github.com/revk/ESP32-Faikin/tree/main/ESP/release).
+- Download the correct firmware binaries for your device (PICO, S1, S2, or S3) from this ![link](https://github.com/revk/ESP32-Faikin/tree/main/ESP/release).
 - Note that newer boards may need a TC2030 lead for USB instead
 
 ### Connection
@@ -116,5 +116,11 @@ or (for S1 chip)
 
 ```
 esptool.py -p /dev/ttyUSB0 write_flash 0x1000 Faikin-S1-PICO-bootloader.bin 0x8000 partition-table.bin 0xd000 ota_data_initial.bin 0x10000 Faikin-S1-PICO.bin
+```
+
+or (for S2 chip)
+
+```
+esptool.py --chip esp32s2 -p /dev/ttyUSB0 write_flash 0x0 Faikin-S2.bin
 ```
 

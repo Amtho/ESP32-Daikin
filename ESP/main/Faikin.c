@@ -171,6 +171,7 @@ struct
 
 static httpd_handle_t webserver = NULL;
 static uint8_t proto = 0;
+static char remote_method[16] = "home only";
 
 static int
 uart_enabled (void)
@@ -2296,7 +2297,7 @@ legacy_get_basic_info (void)
    jo_int (j, "location", 0);
    jo_string (j, "name", hostname);
    jo_int (j, "icon", 1);
-   jo_string (j, "method", "home only");        // "polling" for Daikin cloud
+   jo_string (j, "method", remote_method);      // "polling" for Daikin cloud
    jo_int (j, "port", 30050);   // Cloud port ?
    jo_string (j, "id", "");
    jo_string (j, "pw", "");
@@ -2711,8 +2712,8 @@ legacy_web_set_notify (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_remote_method (httpd_req_t * req)
 {
-   jo_t j = legacy_ok ();          // Pretend polling only
-   jo_string (&j, "method", "home only");
+   jo_t j = legacy_ok ();          // Current remote access policy
+   jo_string (&j, "method", remote_method);
    return legacy_send (req, &j);
 }
 
@@ -2724,7 +2725,19 @@ legacy_web_set_remote_method (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "method"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            strncpy (remote_method, v, sizeof (remote_method) - 1);
+            remote_method[sizeof (remote_method) - 1] = 0;
+         }
+         free (v);
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
