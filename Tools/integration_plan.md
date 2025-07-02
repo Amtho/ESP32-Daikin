@@ -75,3 +75,7 @@ messages so that Faikin mirrors the official modules.
   report the current access policy.
 - [x] Added stub handlers for remaining HTTP endpoints so third-party clients
   receive `ret=OK` responses.
+- [x] `/aircon/get_target` and `/aircon/set_target` persist the requested
+  temperature.
+- [x] `/aircon/get_price` and `/aircon/set_price` retain the energy price
+  value for later queries.

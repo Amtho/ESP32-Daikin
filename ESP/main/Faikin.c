@@ -11,6 +11,7 @@ static const char TAG[] = "Faikin";
 #include "esp_http_server.h"
 #include "esp_system.h"
 #include <math.h>
+#include <stdlib.h>
 #include "mdns.h"
 #ifdef CONFIG_BT_NIMBLE_ENABLED
 #include "bleenv.h"
@@ -173,6 +174,8 @@ static httpd_handle_t webserver = NULL;
 static uint8_t proto = 0;
 static char remote_method[16] = "home only";
 static uint8_t notify_enabled = 0;
+static float target_temp = 21.0;      // Stored target temperature for legacy API
+static float energy_price = 0.0;      // Stored energy price for legacy API
 
 static int
 uart_enabled (void)
@@ -2619,6 +2622,7 @@ static esp_err_t
 legacy_web_get_price (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();
+   jo_stringf (j, "price", "%0.3f", energy_price);
    return legacy_send (req, &j);
 }
 
@@ -2630,7 +2634,18 @@ legacy_web_set_price (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "price"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            energy_price = atof (v);
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
@@ -2638,6 +2653,7 @@ static esp_err_t
 legacy_web_get_target (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();
+   jo_stringf (j, "target", "%0.1f", target_temp);
    return legacy_send (req, &j);
 }
 
@@ -2649,7 +2665,18 @@ legacy_web_set_target (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "target"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            target_temp = atof (v);
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
