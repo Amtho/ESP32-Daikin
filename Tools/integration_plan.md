@@ -73,3 +73,5 @@ messages so that Faikin mirrors the official modules.
 
 - [x] `/common/get_remote_method` and `/common/set_remote_method` store and
   report the current access policy.
+- [x] Added stub handlers for remaining HTTP endpoints so third-party clients
+  receive `ret=OK` responses.

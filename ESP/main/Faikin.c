@@ -172,6 +172,7 @@ struct
 static httpd_handle_t webserver = NULL;
 static uint8_t proto = 0;
 static char remote_method[16] = "home only";
+static uint8_t notify_enabled = 0;
 
 static int
 uart_enabled (void)
@@ -2693,7 +2694,8 @@ legacy_web_set_scdltimer (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_notify (httpd_req_t * req)
 {
-   jo_t j = legacy_ok ();
+   jo_t j = legacy_ok ();          // Report stored notify state
+   jo_int (&j, "notify", notify_enabled);
    return legacy_send (req, &j);
 }
 
@@ -2705,7 +2707,18 @@ legacy_web_set_notify (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "notify") || jo_find (j, "enable"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            notify_enabled = atoi (v) ? 1 : 0;
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 

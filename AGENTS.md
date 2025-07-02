@@ -12,5 +12,7 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 ## Progress
 
 - Remote method endpoints implemented.
+- Stub handlers for additional HTTP API endpoints in place.
+- ESP32-S2 build target available.
 
 For questions or larger design changes, open a GitHub issue first.
