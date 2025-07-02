@@ -90,6 +90,7 @@ Basically, Daikin have gone all cloudy with the latest WiFi controllers. This mo
 * or, works with BlueCoinT and Telink [BLE temperature sensor](Manuals/BLE.md) as a remote reference in an auto mode
 * Automatically works out if S21 or X50 protocol (used on bigger/ducted units)
 * Backwards compatible direct `/aircon/...` URLs
+* Stub HTTP endpoints remember target temperature and LED settings
 
 # Building code yourself
 

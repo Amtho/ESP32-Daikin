@@ -14,5 +14,7 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 - Remote method endpoints implemented.
 - Stub handlers for additional HTTP API endpoints in place.
 - ESP32-S2 build target available.
+- ESP32-S3 build target available.
+- Target temperature and LED state persist across HTTP calls.
 
 For questions or larger design changes, open a GitHub issue first.

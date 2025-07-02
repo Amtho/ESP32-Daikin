@@ -75,3 +75,4 @@ messages so that Faikin mirrors the official modules.
   report the current access policy.
 - [x] Added stub handlers for remaining HTTP endpoints so third-party clients
   receive `ret=OK` responses.
+- [x] Target temperature and LED settings are remembered between requests.

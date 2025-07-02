@@ -173,6 +173,8 @@ static httpd_handle_t webserver = NULL;
 static uint8_t proto = 0;
 static char remote_method[16] = "home only";
 static uint8_t notify_enabled = 0;
+static float stub_target = 20.0;
+static uint8_t led_state = 1;
 
 static int
 uart_enabled (void)
@@ -2637,7 +2639,8 @@ legacy_web_set_price (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_target (httpd_req_t * req)
 {
-   jo_t j = legacy_ok ();
+   jo_t j = legacy_ok ();          // Report stored stub value
+   jo_litf (&j, "target", "%.1f", stub_target);
    return legacy_send (req, &j);
 }
 
@@ -2649,7 +2652,18 @@ legacy_web_set_target (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "target") || jo_find (j, "stemp"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            stub_target = atof (v);
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
@@ -2786,7 +2800,18 @@ legacy_web_set_led (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "led"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            led_state = atoi (v) ? 1 : 0;
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
