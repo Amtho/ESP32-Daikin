@@ -95,6 +95,10 @@ Basically, Daikin have gone all cloudy with the latest WiFi controllers. This mo
 
 Git clone this `--recursive` to get all the submodules, and it should build with just `make`. There are make targets for other variations, but this hardware is the `make pico` or `make s3` version. The `make` actually runs the normal `idf.py` to build which then uses cmake. `make menuconfig` can be used to fine tune the settings, but the defaults should be mostly sane. `make flash` should work to program. If flashing yourself, you will need a programming lead, e.g. [Tazmotizer](https://github.com/revk/Shelly-Tasmotizer-PCB) or similar, and of course the full ESP IDF environment. The latest boards also have 4 pads for direct USB connection to flash with no adaptor. The modules on Amazon come pre-loaded and can upgrade over the air.
 
+If you forget to clone with `--recursive`, run `python setup_submodules.py` (or
+`setup_submodules.bat` on Windows) in the repository root to fetch all the
+required libraries.
+
 The code is normally set up to automatically upgrade the software, checking roughtly once a week. You can change this in settings via MQTT.
 
 If you build yourself, you either need no code signing, or your own signing key. This will break auto-updates which try to load my code releases, so you need to adjuist settings `otahost` and `otaauto` accordingly. You can set these in the build config, along with WiFi settings, etc.
