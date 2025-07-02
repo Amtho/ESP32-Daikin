@@ -9,6 +9,7 @@ static const char TAG[] = "Faikin";
 #include <driver/gpio.h>
 #include <driver/uart.h>
 #include "esp_http_server.h"
+#include "esp_system.h"
 #include <math.h>
 #include "mdns.h"
 #ifdef CONFIG_BT_NIMBLE_ENABLED
@@ -2592,6 +2593,198 @@ legacy_web_set_special_mode (httpd_req_t * req)
    return legacy_simple_response (req, err);
 }
 
+// Stub handlers for additional Daikin HTTP API endpoints
+static esp_err_t
+legacy_web_get_timer (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();          // No timer functionality yet
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_timer (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);                // Ignore parameters for now
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_get_price (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_price (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_get_target (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_target (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_get_program (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_program (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_get_scdltimer (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_scdltimer (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_get_notify (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_notify (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_get_remote_method (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();          // Pretend polling only
+   jo_string (&j, "method", "home only");
+   return legacy_send (req, &j);
+}
+
+static esp_err_t
+legacy_web_set_remote_method (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_set_regioncode (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+   {
+      if (jo_find (j, "region"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            strncpy (region, v, sizeof (region) - 1);
+            region[sizeof (region) - 1] = 0;
+         }
+         free (v);
+      }
+      jo_free (&j);
+   }
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_set_led (httpd_req_t * req)
+{
+   const char *err = NULL;
+   jo_t j = revk_web_query (req);
+   if (!j)
+      err = "Query failed";
+   else
+      jo_free (&j);
+   return legacy_simple_response (req, err);
+}
+
+static esp_err_t
+legacy_web_reboot (httpd_req_t * req)
+{
+   jo_t j = legacy_ok ();
+   legacy_send (req, &j);
+   esp_restart ();               // Restart after responding
+   return ESP_OK;
+}
+
+static esp_err_t
+legacy_web_get_year_power_alias (httpd_req_t * req)
+{
+   return legacy_web_get_year_power (req);
+}
+
+static esp_err_t
+legacy_web_get_week_power_alias (httpd_req_t * req)
+{
+   return legacy_web_get_week_power (req);
+}
+
 // Daikin's original auto-discovery mechanism. Reverse engineered from
 // Daikin online controller app.
 static void
@@ -3239,7 +3432,7 @@ app_main ()
       config.stack_size += 4096;        // Being on the safe side
       // When updating the code below, make sure this is enough
       // Note that we're also adding revk's own web config handlers
-      config.max_uri_handlers = 16 + revk_num_web_handlers ();
+      config.max_uri_handlers = 32 + revk_num_web_handlers ();
       if (!httpd_start (&webserver, &config))
       {
          if (websettings)
@@ -3259,6 +3452,25 @@ app_main ()
             register_get_uri ("/common/register_terminal", legacy_web_register_terminal);
             register_get_uri ("/aircon/get_year_power_ex", legacy_web_get_year_power);
             register_get_uri ("/aircon/get_week_power_ex", legacy_web_get_week_power);
+            register_get_uri ("/aircon/get_year_power", legacy_web_get_year_power_alias);
+            register_get_uri ("/aircon/get_week_power", legacy_web_get_week_power_alias);
+            register_get_uri ("/common/get_remote_method", legacy_web_get_remote_method);
+            register_get_uri ("/common/set_remote_method", legacy_web_set_remote_method);
+            register_get_uri ("/aircon/get_timer", legacy_web_get_timer);
+            register_get_uri ("/aircon/set_timer", legacy_web_set_timer);
+            register_get_uri ("/aircon/get_price", legacy_web_get_price);
+            register_get_uri ("/aircon/set_price", legacy_web_set_price);
+            register_get_uri ("/aircon/get_target", legacy_web_get_target);
+            register_get_uri ("/aircon/set_target", legacy_web_set_target);
+            register_get_uri ("/aircon/get_program", legacy_web_get_program);
+            register_get_uri ("/aircon/set_program", legacy_web_set_program);
+            register_get_uri ("/aircon/get_scdltimer", legacy_web_get_scdltimer);
+            register_get_uri ("/aircon/set_scdltimer", legacy_web_set_scdltimer);
+            register_get_uri ("/common/get_notify", legacy_web_get_notify);
+            register_get_uri ("/common/set_notify", legacy_web_set_notify);
+            register_get_uri ("/common/set_regioncode", legacy_web_set_regioncode);
+            register_get_uri ("/common/set_led", legacy_web_set_led);
+            register_get_uri ("/common/reboot", legacy_web_reboot);
             register_get_uri ("/aircon/set_special_mode", legacy_web_set_special_mode);
             register_get_uri ("/aircon/set_demand_control", legacy_web_set_demand_control);
             register_get_uri ("/aircon/set_holiday", legacy_web_set_holiday);
