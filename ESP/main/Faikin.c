@@ -176,6 +176,8 @@ static char remote_method[16] = "home only";
 static uint8_t notify_enabled = 0;
 static float target_temp = 21.0;      // Stored target temperature for legacy API
 static float energy_price = 0.0;      // Stored energy price for legacy API
+static char region[8] = "eu";         // Stored region code for legacy API
+static uint8_t led_state = 1;         // Stored LED setting for legacy API
 
 static int
 uart_enabled (void)
@@ -2308,7 +2310,7 @@ legacy_get_basic_info (void)
    jo_int (j, "lpw_flag", 0);
    jo_int (j, "adp_kind", 0);   // Controller HW type, for firmware update. We pretend to be GainSpan.
    jo_protocol_version (j);
-   jo_int (j, "led", 1);        // Our LED is always on
+   jo_int (j, "led", led_state);        // Stored LED setting
    jo_int (j, "en_setzone", 0); // ??
    jo_string (j, "mac", revk_id);
    jo_string (j, "adp_mode", "run");    // Required for Daikin apps to see us
@@ -2695,7 +2697,22 @@ legacy_web_set_program (httpd_req_t * req)
    if (!j)
       err = "Query failed";
    else
+   {
+      if (jo_find (j, "led") || jo_find (j, "enable"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            led_state = atoi (v) ? 1 : 0;
+            jo_t s = jo_object_alloc();
+            jo_int (s, "led", led_state);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+            free (v);
+         }
+      }
       jo_free (&j);
+   }
    return legacy_simple_response (req, err);
 }
 
@@ -2741,6 +2758,10 @@ legacy_web_set_notify (httpd_req_t * req)
          if (v)
          {
             notify_enabled = atoi (v) ? 1 : 0;
+            jo_t s = jo_object_alloc();
+            jo_int (s, "notify", notify_enabled);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
             free (v);
          }
       }
@@ -2797,6 +2818,10 @@ legacy_web_set_regioncode (httpd_req_t * req)
          {
             strncpy (region, v, sizeof (region) - 1);
             region[sizeof (region) - 1] = 0;
+            jo_t s = jo_object_alloc();
+            jo_string (s, "region", region);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
          }
          free (v);
       }

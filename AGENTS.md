@@ -15,5 +15,7 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 - Stub handlers for additional HTTP API endpoints in place.
 - Target and price endpoints persist values for later retrieval.
 - ESP32-S2 build target available.
+- Notification, region and LED endpoints persist settings.
+- ESP32-S3 build target available.
 
 For questions or larger design changes, open a GitHub issue first.

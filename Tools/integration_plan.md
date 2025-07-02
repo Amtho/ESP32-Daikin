@@ -79,3 +79,7 @@ messages so that Faikin mirrors the official modules.
   temperature.
 - [x] `/aircon/get_price` and `/aircon/set_price` retain the energy price
   value for later queries.
+- [x] `/common/get_notify` and `/common/set_notify` persist the notification
+  enabled state.
+- [x] `/common/set_regioncode` and `/common/set_led` store the region code
+  and LED preference.
