@@ -83,3 +83,6 @@ messages so that Faikin mirrors the official modules.
   enabled state.
 - [x] `/common/set_regioncode` and `/common/set_led` store the region code
   and LED preference.
+- [x] `/aircon/get_timer`, `/aircon/set_timer`, `/aircon/get_program`,
+  `/aircon/set_program` and `/aircon/get_scdltimer`/`set_scdltimer`
+  preserve the most recently supplied values.
