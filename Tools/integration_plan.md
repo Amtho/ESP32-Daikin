@@ -103,3 +103,5 @@ messages so that Faikin mirrors the official modules.
   hardware is connected.
 - [x] ESP32-S2 and ESP32-S3 build targets are available and select default
   UART pins for those boards.
+- [x] Stored settings for remote method, notify, target, price and timers are
+  loaded at startup so changes persist across reboots.
