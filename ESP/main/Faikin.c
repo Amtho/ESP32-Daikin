@@ -453,6 +453,14 @@ query_scdltimer_state(void)
    daikin_s21_command('F', '4', 0, NULL);
 }
 
+static void
+query_led_state(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', '6', 0, NULL);
+}
+
 static uint8_t
 proto_type (void)
 {
@@ -3001,7 +3009,9 @@ legacy_web_set_scdltimer (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_notify (httpd_req_t * req)
 {
-   jo_t j = legacy_ok ();          // Report stored notify state
+   query_led_state();
+   notify_enabled = daikin.led;
+   jo_t j = legacy_ok ();          // Report current notify state
    jo_int (&j, "notify", notify_enabled);
    return legacy_send (req, &j);
 }
