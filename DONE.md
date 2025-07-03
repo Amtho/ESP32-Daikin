@@ -12,4 +12,6 @@ The following tasks from `AGENTS.md` have been finished:
 - `/common/set_remote_method` now toggles remote control mode.
 - Program and schedule timers send the S21 `D4`/`F4` commands so settings
   take effect on the unit.
+- Timer endpoints now parse the `timer`, `program` and `scdltimer`
+  query parameters and forward them via S21 commands.
 

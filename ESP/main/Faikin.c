@@ -2829,16 +2829,21 @@ legacy_web_set_timer (httpd_req_t * req)
       err = "Query failed";
    else
    {
-      size_t len = httpd_req_get_url_query_len (req);
-      if (len >= sizeof (timer_state))
-         len = sizeof (timer_state) - 1;
-      if (httpd_req_get_url_query_str (req, timer_state, len + 1) != ESP_OK)
-         timer_state[0] = 0;
-      jo_t s = jo_object_alloc();
-      jo_string (s, "timer", timer_state);
-      revk_settings_store (s, NULL, 1);
-      jo_free (&s);
-      send_timer_command(timer_state);
+      if (jo_find (j, "timer"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            strncpy (timer_state, v, sizeof (timer_state) - 1);
+            timer_state[sizeof (timer_state) - 1] = 0;
+            jo_t s = jo_object_alloc();
+            jo_string (s, "timer", timer_state);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+            send_timer_command (timer_state);
+            free (v);
+         }
+      }
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2934,16 +2939,21 @@ legacy_web_set_program (httpd_req_t * req)
       err = "Query failed";
    else
    {
-      size_t len = httpd_req_get_url_query_len (req);
-      if (len >= sizeof (program_state))
-         len = sizeof (program_state) - 1;
-      if (httpd_req_get_url_query_str (req, program_state, len + 1) != ESP_OK)
-         program_state[0] = 0;
-      jo_t s = jo_object_alloc();
-      jo_string (s, "program", program_state);
-      revk_settings_store (s, NULL, 1);
-      jo_free (&s);
-      send_program_command(program_state);
+      if (jo_find (j, "program"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            strncpy (program_state, v, sizeof (program_state) - 1);
+            program_state[sizeof (program_state) - 1] = 0;
+            jo_t s = jo_object_alloc();
+            jo_string (s, "program", program_state);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+            send_program_command (program_state);
+            free (v);
+         }
+      }
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2968,16 +2978,21 @@ legacy_web_set_scdltimer (httpd_req_t * req)
       err = "Query failed";
    else
    {
-      size_t len = httpd_req_get_url_query_len (req);
-      if (len >= sizeof (scdl_timer_state))
-         len = sizeof (scdl_timer_state) - 1;
-      if (httpd_req_get_url_query_str (req, scdl_timer_state, len + 1) != ESP_OK)
-         scdl_timer_state[0] = 0;
-      jo_t s = jo_object_alloc();
-      jo_string (s, "scdltimer", scdl_timer_state);
-      revk_settings_store (s, NULL, 1);
-      jo_free (&s);
-      send_scdltimer_command(scdl_timer_state);
+      if (jo_find (j, "scdltimer"))
+      {
+         char *v = jo_strdup (j);
+         if (v)
+         {
+            strncpy (scdl_timer_state, v, sizeof (scdl_timer_state) - 1);
+            scdl_timer_state[sizeof (scdl_timer_state) - 1] = 0;
+            jo_t s = jo_object_alloc();
+            jo_string (s, "scdltimer", scdl_timer_state);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+            send_scdltimer_command (scdl_timer_state);
+            free (v);
+         }
+      }
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
