@@ -133,9 +133,10 @@ continue to operate while hardware integration is completed.
 /aircon/get_week_power
 ```
 
-Hardware support is gradually being implemented.  The timer,
-program and schedule timer endpoints now send the relevant S21
-commands to the air conditioner.
+Hardware support now covers the majority of these handlers.  Timer,
+program and schedule timer requests are forwarded via S21 commands and
+the notify, remote method, region and power history APIs query the
+unit before replying.  Only the pricing endpoints remain local-only.
 
 ## Flashing code
 
