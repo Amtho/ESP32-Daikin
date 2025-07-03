@@ -2643,6 +2643,10 @@ legacy_web_set_timer (httpd_req_t * req)
          len = sizeof (timer_state) - 1;
       if (httpd_req_get_url_query_str (req, timer_state, len + 1) != ESP_OK)
          timer_state[0] = 0;
+      jo_t s = jo_object_alloc();
+      jo_string (s, "timer", timer_state);
+      revk_settings_store (s, NULL, 1);
+      jo_free (&s);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2671,6 +2675,10 @@ legacy_web_set_price (httpd_req_t * req)
          if (v)
          {
             energy_price = atof (v);
+            jo_t s = jo_object_alloc();
+            jo_stringf (s, "price", "%0.3f", energy_price);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
             free (v);
          }
       }
@@ -2702,6 +2710,11 @@ legacy_web_set_target (httpd_req_t * req)
          if (v)
          {
             target_temp = atof (v);
+            daikin_set_t_e (err, temp, target_temp);
+            jo_t s = jo_object_alloc();
+            jo_stringf (s, "target", "%0.1f", target_temp);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
             free (v);
          }
       }
@@ -2733,6 +2746,10 @@ legacy_web_set_program (httpd_req_t * req)
          len = sizeof (program_state) - 1;
       if (httpd_req_get_url_query_str (req, program_state, len + 1) != ESP_OK)
          program_state[0] = 0;
+      jo_t s = jo_object_alloc();
+      jo_string (s, "program", program_state);
+      revk_settings_store (s, NULL, 1);
+      jo_free (&s);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2761,6 +2778,10 @@ legacy_web_set_scdltimer (httpd_req_t * req)
          len = sizeof (scdl_timer_state) - 1;
       if (httpd_req_get_url_query_str (req, scdl_timer_state, len + 1) != ESP_OK)
          scdl_timer_state[0] = 0;
+      jo_t s = jo_object_alloc();
+      jo_string (s, "scdltimer", scdl_timer_state);
+      revk_settings_store (s, NULL, 1);
+      jo_free (&s);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2825,6 +2846,10 @@ legacy_web_set_remote_method (httpd_req_t * req)
          {
             strncpy (remote_method, v, sizeof (remote_method) - 1);
             remote_method[sizeof (remote_method) - 1] = 0;
+            jo_t s = jo_object_alloc();
+            jo_string (s, "remote_method", remote_method);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
          }
          free (v);
       }
