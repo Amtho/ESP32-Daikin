@@ -7,7 +7,6 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 
 - Extend the HTTP API according to `Tools/integration_plan.md`. Ensure stub
   endpoints behave like the official modules while integration work continues.
-- Add build and configuration support for **ESP32‑S2** and **ESP32‑S3** boards.
 
 ## Progress
 
@@ -22,6 +21,7 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 - ESP32-S3 build target available.
 - Timer, program and schedule timer settings now stored persistently.
 - Target, price and remote method updates apply immediately and are saved.
+- Notify and LED endpoints accept textual on/off parameters for compatibility.
 
 ## Pending hardware implementation
 

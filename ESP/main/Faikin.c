@@ -2907,7 +2907,12 @@ legacy_web_set_notify (httpd_req_t * req)
          char *v = jo_strdup (j);
          if (v)
          {
-            notify_enabled = atoi (v) ? 1 : 0;
+            if (!strcasecmp (v, "on") || !strcasecmp (v, "true"))
+               notify_enabled = 1;
+            else if (!strcasecmp (v, "off") || !strcasecmp (v, "false"))
+               notify_enabled = 0;
+            else
+               notify_enabled = atoi (v) ? 1 : 0;
             jo_t s = jo_object_alloc();
             jo_int (s, "notify", notify_enabled);
             revk_settings_store (s, NULL, 1);
@@ -3003,7 +3008,12 @@ legacy_web_set_led (httpd_req_t * req)
          char *v = jo_strdup (j);
          if (v)
          {
-            led_state = atoi (v) ? 1 : 0;
+            if (!strcasecmp (v, "on") || !strcasecmp (v, "true"))
+               led_state = 1;
+            else if (!strcasecmp (v, "off") || !strcasecmp (v, "false"))
+               led_state = 0;
+            else
+               led_state = atoi (v) ? 1 : 0;
             daikin_set_v_e (err, led, led_state);
             jo_t s = jo_object_alloc();
             jo_int (s, "led", led_state);
