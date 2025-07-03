@@ -182,6 +182,7 @@ static uint8_t led_state = 1;         // Stored LED setting for legacy API
 static char timer_state[96] = "";     // Stored /set_timer parameters
 static char program_state[96] = "";   // Stored /set_program parameters
 static char scdl_timer_state[96] = "";// Stored /set_scdltimer parameters
+static char holiday_state[96] = "";   // Stored /set_holiday parameters
 
 // Energy history for the last two weeks (14 entries of daily usage)
 static uint8_t power_week_index = 0;
@@ -2272,7 +2273,15 @@ legacy_web_set_holiday (httpd_req_t * req)
       err = "Query failed";
    else
    {
-      // TODO - ignore for now
+      size_t len = httpd_req_get_url_query_len (req);
+      if (len >= sizeof (holiday_state))
+         len = sizeof (holiday_state) - 1;
+      if (httpd_req_get_url_query_str (req, holiday_state, len + 1) != ESP_OK)
+         holiday_state[0] = 0;
+      jo_t s = jo_object_alloc();
+      jo_string (s, "holiday", holiday_state);
+      revk_settings_store (s, NULL, 1);
+      jo_free (&s);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
