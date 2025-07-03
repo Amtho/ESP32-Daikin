@@ -185,9 +185,12 @@ static char scdl_timer_state[96] = "";// Stored /set_scdltimer parameters
 static char holiday_state[96] = "";   // Stored /set_holiday parameters
 
 // Energy history for the last two weeks (14 entries of daily usage)
+static uint32_t powerweek[14] = {0};
+static uint32_t powermonth[12] = {0};
 static uint8_t power_week_index = 0;
 static uint32_t last_power_Wh = 0;
 static int last_power_day = -1;
+static int last_power_month = -1;
 
 static void
 update_power_history(void)
@@ -198,14 +201,26 @@ update_power_history(void)
    if (last_power_day == -1)
    {
       last_power_day = tm.tm_yday;
+      last_power_month = tm.tm_mon;
       last_power_Wh = daikin.Wh;
       return;
    }
-   if (tm.tm_yday != last_power_day)
+   if (tm.tm_mon != last_power_month)
+   {
+      uint32_t diff = (daikin.Wh > last_power_Wh) ? daikin.Wh - last_power_Wh : 0;
+      powermonth[last_power_month] += diff;
+      power_week_index = (power_week_index + 1) % 14;
+      powerweek[power_week_index] = diff;
+      last_power_month = tm.tm_mon;
+      last_power_day = tm.tm_yday;
+      last_power_Wh = daikin.Wh;
+   }
+   else if (tm.tm_yday != last_power_day)
    {
       uint32_t diff = (daikin.Wh > last_power_Wh) ? daikin.Wh - last_power_Wh : 0;
       power_week_index = (power_week_index + 1) % 14;
       powerweek[power_week_index] = diff;
+      powermonth[last_power_month] += diff;
       last_power_day = tm.tm_yday;
       last_power_Wh = daikin.Wh;
    }
@@ -2571,13 +2586,21 @@ legacy_web_get_year_power (httpd_req_t * req)
 {
    /*
     * The official Daikin modules report monthly usage for the current and
-    * previous year.  We do not yet track per-month totals so return the
-    * current accumulated Wh value in the first month and zeroes elsewhere.
+    * previous year.  We approximate this using the accumulated daily
+    * differences and expose the totals for the last twelve months.
     */
+   update_power_history();
    jo_t j = legacy_ok ();
-   jo_stringf (j, "curr_year_heat",
-               "%u/0/0/0/0/0/0/0/0/0/0/0",
-               daikin.Wh / 100);
+   char heat[128] = "";
+   for (int i = 0; i < 12; i++)
+   {
+      char buf[12];
+      sprintf (buf, "%u/", powermonth[i] / 100);
+      strcat (heat, buf);
+   }
+   if (*heat)
+      heat[strlen (heat) - 1] = 0;
+   jo_string (j, "curr_year_heat", heat);
    jo_string (j, "prev_year_heat",
               "0/0/0/0/0/0/0/0/0/0/0/0");
    jo_string (j, "curr_year_cool",
