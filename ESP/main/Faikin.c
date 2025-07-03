@@ -401,6 +401,14 @@ send_timer_command(const char *state)
    daikin_s21_command('D', '3', S21_PAYLOAD_LEN, payload);
 }
 
+static void
+query_timer_state(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', '3', 0, NULL);
+}
+
 static uint8_t
 proto_type (void)
 {
@@ -805,11 +813,17 @@ daikin_s21_response (uint8_t cmd, uint8_t cmd2, int len, uint8_t * payload)
             }
          }
          break;
-      case '3':                // Seems to be an alternative to G6
-         // If F6 is supported, F3 does not provide "powerful" flag even if supported.
-         // We may still get G3 response for debug or from injection via MQTT "send".
-         if (s21.F6.bad && check_length (cmd, cmd2, len, 1, payload))
-         {
+      case '3':                // 'G3' - timer status or alternative to G6
+         if (check_length (cmd, cmd2, len, S21_PAYLOAD_LEN, payload))
+         {                     // Timer state is 4 bytes long
+            char state[5];
+            memcpy (state, payload, 4);
+            state[4] = 0;
+            strncpy (timer_state, state, sizeof (timer_state) - 1);
+            timer_state[sizeof (timer_state) - 1] = 0;
+         }
+         else if (s21.F6.bad && check_length (cmd, cmd2, len, 1, payload))
+         {                     // Older units report powerful via G3
             report_bool (powerful, payload[3] & 0x02);
          }
          break;
@@ -2741,7 +2755,8 @@ legacy_web_get_week_power (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_timer (httpd_req_t * req)
 {
-   jo_t j = legacy_ok ();          // No timer functionality yet
+   query_timer_state();            // Poll the current timer from the unit
+   jo_t j = legacy_ok ();
    if (*timer_state)
       jo_string (j, "timer", timer_state);
    return legacy_send (req, &j);
