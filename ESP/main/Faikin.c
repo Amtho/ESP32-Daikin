@@ -191,6 +191,87 @@ static uint32_t last_power_Wh = 0;
 static int last_power_day = -1;
 static int last_power_month = -1;
 
+/* Track power usage across reboots.  The values are persisted in NVS once per
+ * day to avoid excessive flash wear.  Stored keys are:
+ *  - power.week      : 14 element array of daily usage
+ *  - power.month     : 12 element array of monthly totals
+ *  - power.weekindex : index of most recent day entry
+ *  - power.day       : day-of-year of last update
+ *  - power.monthidx  : month of last update
+ *  - power.wh        : absolute Wh counter at last update
+ */
+
+static void
+load_power_history(void)
+{
+   revk_settings_t *s;
+   char *v;
+   for (int i = 0; i < 14; i++)
+   {
+      int index = i;
+      if ((s = revk_settings_find("power.week", &index)) &&
+          (v = revk_settings_text(s, index, NULL)))
+      {
+         powerweek[i] = strtoul(v, NULL, 0);
+         free(v);
+      }
+   }
+   for (int i = 0; i < 12; i++)
+   {
+      int index = i;
+      if ((s = revk_settings_find("power.month", &index)) &&
+          (v = revk_settings_text(s, index, NULL)))
+      {
+         powermonth[i] = strtoul(v, NULL, 0);
+         free(v);
+      }
+   }
+   if ((s = revk_settings_find("power.weekindex", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      power_week_index = atoi(v);
+      free(v);
+   }
+   if ((s = revk_settings_find("power.day", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      last_power_day = atoi(v);
+      free(v);
+   }
+   if ((s = revk_settings_find("power.monthidx", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      last_power_month = atoi(v);
+      free(v);
+   }
+   if ((s = revk_settings_find("power.wh", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      last_power_Wh = strtoul(v, NULL, 0);
+      free(v);
+   }
+}
+
+static void
+save_power_history(void)
+{
+   jo_t s = jo_object_alloc();
+   jo_array(s, "power.week");
+   for (int i = 0; i < 14; i++)
+      jo_int(s, NULL, powerweek[i]);
+   jo_close(s);
+   jo_array(s, "power.month");
+   for (int i = 0; i < 12; i++)
+      jo_int(s, NULL, powermonth[i]);
+   jo_close(s);
+   jo_int(s, "power.weekindex", power_week_index);
+   jo_int(s, "power.day", last_power_day);
+   jo_int(s, "power.monthidx", last_power_month);
+   jo_int(s, "power.wh", last_power_Wh);
+   revk_settings_store(s, NULL, 1);
+   jo_free(&s);
+}
+
 static void
 update_power_history(void)
 {
@@ -213,6 +294,7 @@ update_power_history(void)
       last_power_month = tm.tm_mon;
       last_power_day = tm.tm_yday;
       last_power_Wh = daikin.Wh;
+      save_power_history();
    }
    else if (tm.tm_yday != last_power_day)
    {
@@ -222,6 +304,7 @@ update_power_history(void)
       powermonth[last_power_month] += diff;
       last_power_day = tm.tm_yday;
       last_power_Wh = daikin.Wh;
+      save_power_history();
    }
 }
 
@@ -3497,6 +3580,8 @@ app_main ()
 #include "acextras.m"
    revk_boot (&mqtt_client_callback);
    revk_start ();
+
+   load_power_history();
 
    ESP_LOGD (TAG, "USB %d", usb_serial_jtag_is_connected ());
    if (tx.set && rx.set)
