@@ -54,12 +54,12 @@ s3:
 	@make
 
 s3n8:
-        components/ESP32-RevK/setbuildsuffix -S3-MINI-N8
-        @make
+	components/ESP32-RevK/setbuildsuffix -S3-MINI-N8
+	@make
 
 s2:
-        components/ESP32-RevK/setbuildsuffix -S2
-        @make
+	components/ESP32-RevK/setbuildsuffix -S2
+	@make
 
 pico:
 	components/ESP32-RevK/setbuildsuffix -S1-PICO
