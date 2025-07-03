@@ -19,8 +19,8 @@ appropriate S21 or CN_WIRED commands so Faikin mirrors the official Daikin
 modules.
 
 - `/aircon/get_timer` and `/aircon/set_timer`
-- `/aircon/get_program` and `/aircon/set_program`
-- `/aircon/get_scdltimer` and `/aircon/set_scdltimer`
+- `/aircon/get_program` and `/aircon/set_program` *(in progress)*
+- `/aircon/get_scdltimer` and `/aircon/set_scdltimer` *(in progress)*
 - `/aircon/get_price` and `/aircon/set_price`
 - `/common/get_notify` and `/common/set_notify`
 - `/common/get_remote_method` and `/common/set_remote_method`
