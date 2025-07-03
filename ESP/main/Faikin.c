@@ -2623,7 +2623,7 @@ legacy_web_get_year_power (httpd_req_t * req)
               "0/0/0/0/0/0/0/0/0/0/0/0");
    jo_string (j, "curr_year_cool",
               "0/0/0/0/0/0/0/0/0/0/0/0");
-   jo_string (j, "prevyear_cool",
+   jo_string (j, "prev_year_cool",
               "0/0/0/0/0/0/0/0/0/0/0/0");
    return legacy_send (req, &j);
 }
