@@ -19,6 +19,8 @@ The following tasks from `AGENTS.md` have been finished:
 
 - `/common/set_remote_method` now forwards the policy via S21 `D8` commands.
 - `/common/get_remote_method` polls the current setting using `F8` before replying.
+- F8 responses now update the stored `remote_method` value so the HTTP API
+  mirrors the air-con setting.
 - `/common/set_regioncode` sends the `D9` command so the region change takes effect on the unit.
 - Remote method, notify, region and power history endpoints all query the unit
   so responses reflect the actual hardware state.
