@@ -14,4 +14,6 @@ The following tasks from `AGENTS.md` have been finished:
   take effect on the unit.
 - Timer endpoints now parse the `timer`, `program` and `scdltimer`
   query parameters and forward them via S21 commands.
+- `/common/get_notify` polls the LED state so the returned value reflects the
+  current hardware setting.
 
