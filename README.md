@@ -105,6 +105,36 @@ If you build yourself, you either need no code signing, or your own signing key.
 
 If you want to purchase a pre-loaded assembled PCB, see [Tindie](https://www.tindie.com/stores/revk/), and [Amazon UK](https://www.amazon.co.uk/dp/B0C2ZYXNYQ).
 
+## Extended HTTP API
+
+The firmware includes a set of stub handlers matching the Daikin HTTP modules.
+These endpoints store the most recent parameters so that third party clients
+continue to operate while hardware integration is completed.
+
+```
+/common/get_remote_method
+/common/set_remote_method
+/aircon/get_timer
+/aircon/set_timer
+/aircon/get_price
+/aircon/set_price
+/aircon/get_target
+/aircon/set_target
+/aircon/get_program
+/aircon/set_program
+/aircon/get_scdltimer
+/aircon/set_scdltimer
+/common/get_notify
+/common/set_notify
+/common/set_regioncode
+/common/set_led
+/common/reboot
+/aircon/get_year_power
+/aircon/get_week_power
+```
+
+These will be fleshed out with full S21 command support in future updates.
+
 ## Flashing code
 
 You will need to connect a suitable programming lead. Boards have a header for USB. The very latest design (expected on Amazon around Sep 2024) has a tag-connect compatible header for a [TC2030-USB-NL](https://www.tag-connect.com/product/tc2030-usb-nl) lead.

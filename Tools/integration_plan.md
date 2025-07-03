@@ -98,3 +98,5 @@ messages so that Faikin mirrors the official modules.
   placeholder statistics so clients receive expected fields.
 - [x] `/common/set_led` now updates the LED state via S21 commands when
   hardware is connected.
+- [x] ESP32-S2 and ESP32-S3 build targets are available and select default
+  UART pins for those boards.
