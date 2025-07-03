@@ -81,6 +81,8 @@ bit	ble.enable			.old="ble"				// Enable BLE for sensors or remote
 s	auto.b				.live					// BLE sensor ID
 #endif
 
+u32     power.week      0                 .live   .array=14          / Daily power usage history (Wh)
+
 bit	auto.e		1		.live					// Enable auto time and power operations
 u16	auto.0				.live					// HHMM format turn off time
 u16	auto.1				.live					// HHMM format turn on time

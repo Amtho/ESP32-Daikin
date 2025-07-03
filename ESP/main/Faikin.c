@@ -12,6 +12,7 @@ static const char TAG[] = "Faikin";
 #include "esp_system.h"
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mdns.h"
 #ifdef CONFIG_BT_NIMBLE_ENABLED
 #include "bleenv.h"
@@ -181,6 +182,33 @@ static uint8_t led_state = 1;         // Stored LED setting for legacy API
 static char timer_state[96] = "";     // Stored /set_timer parameters
 static char program_state[96] = "";   // Stored /set_program parameters
 static char scdl_timer_state[96] = "";// Stored /set_scdltimer parameters
+
+// Energy history for the last two weeks (14 entries of daily usage)
+static uint8_t power_week_index = 0;
+static uint32_t last_power_Wh = 0;
+static int last_power_day = -1;
+
+static void
+update_power_history(void)
+{
+   time_t now = time(NULL);
+   struct tm tm;
+   localtime_r(&now, &tm);
+   if (last_power_day == -1)
+   {
+      last_power_day = tm.tm_yday;
+      last_power_Wh = daikin.Wh;
+      return;
+   }
+   if (tm.tm_yday != last_power_day)
+   {
+      uint32_t diff = (daikin.Wh > last_power_Wh) ? daikin.Wh - last_power_Wh : 0;
+      power_week_index = (power_week_index + 1) % 14;
+      powerweek[power_week_index] = diff;
+      last_power_day = tm.tm_yday;
+      last_power_Wh = daikin.Wh;
+   }
+}
 
 static int
 uart_enabled (void)
@@ -2553,17 +2581,21 @@ legacy_web_get_year_power (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_week_power (httpd_req_t * req)
 {
-   /*
-    * The real controller returns power usage for the last two weeks.  Until we
-    * have proper statistics just return placeholder zero values so that client
-    * applications do not error.
-    */
-   jo_t j = legacy_ok ();
+   update_power_history();
+   jo_t j = legacy_ok();
    jo_string (j, "s_dayw", "0");
-   jo_string (j, "week_heat",
-              "0/0/0/0/0/0/0/0/0/0/0/0/0/0");
-   jo_string (j, "week_cool",
-              "0/0/0/0/0/0/0/0/0/0/0/0/0/0");
+   char heat[128] = "";
+   for (int i = 0; i < 14; i++)
+   {
+      int idx = (power_week_index + 1 + i) % 14;
+      char buf[12];
+      sprintf (buf, "%u/", powerweek[idx] / 100);
+      strcat (heat, buf);
+   }
+   if (*heat)
+      heat[strlen (heat) - 1] = 0;   // drop trailing slash
+   jo_string (j, "week_heat", heat);
+   jo_string (j, "week_cool", "0/0/0/0/0/0/0/0/0/0/0/0/0/0");
    return legacy_send (req, &j);
 }
 
@@ -3720,6 +3752,7 @@ app_main ()
                A/C, so we don't need this delay. We just keep reading, packets should
                come once per second, and that's our timing */
             usleep (1000000LL - (esp_timer_get_time () % 1000000LL));
+            update_power_history();
          }
 #ifdef ELA
          if (ble_sensor_enabled ())
