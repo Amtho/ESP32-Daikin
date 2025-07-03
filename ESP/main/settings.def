@@ -84,12 +84,12 @@ bit	ble.enable			.old="ble"				// Enable BLE for sensors or remote
 s	auto.b				.live					// BLE sensor ID
 #endif
 
-u32     power.week      0                 .live   .array=14          / Daily power usage history (Wh)
-u32     power.month     0                 .live   .array=12          / Monthly power usage history (Wh)
-u8      power.weekindex 0                 .hide                    / Current week index
-u16     power.day       0                 .hide                    / Last recorded day
-u8      power.monthidx  0                 .hide                    / Last recorded month
-u32     power.wh        0                 .hide                    / Last Wh reading
+u32     power.week      0                 .live   .array=14          // Daily power usage history (Wh)
+u32     power.month     0                 .live   .array=12          // Monthly power usage history (Wh)
+u8      power.weekindex 0                 .hide                    // Current week index
+u16     power.day       0                 .hide                    // Last recorded day
+u8      power.monthidx  0                 .hide                    // Last recorded month
+u32     power.wh        0                 .hide                    // Last Wh reading
 
 bit	auto.e		1		.live					// Enable auto time and power operations
 u16	auto.0				.live					// HHMM format turn off time
