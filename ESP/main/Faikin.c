@@ -192,6 +192,7 @@ parse_bool (const char *v)
            !strcasecmp (v, "on")) ? 1 : 0;
 }
 
+
 // Energy history for the last two weeks (14 entries of daily usage)
 static uint32_t powerweek[14] = {0};
 static uint32_t powermonth[12] = {0};
@@ -388,6 +389,16 @@ static int
 uart_enabled (void)
 {
    return tx.set && rx.set;
+}
+
+static void
+send_timer_command(const char *state)
+{
+   if (!uart_enabled() || !state || !*state)
+      return;
+   char payload[S21_PAYLOAD_LEN] = {0};
+   strncpy(payload, state, S21_PAYLOAD_LEN);
+   daikin_s21_command('D', '3', S21_PAYLOAD_LEN, payload);
 }
 
 static uint8_t
@@ -2754,6 +2765,7 @@ legacy_web_set_timer (httpd_req_t * req)
       jo_string (s, "timer", timer_state);
       revk_settings_store (s, NULL, 1);
       jo_free (&s);
+      send_timer_command(timer_state);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
