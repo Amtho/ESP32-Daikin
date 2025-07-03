@@ -2327,7 +2327,15 @@ legacy_web_set_demand_control (httpd_req_t * req)
             demand = atoi (v);
          free (v);
       }
-      daikin_set_i_e (err, demand, on ? demand : 100);
+      int new_demand = on ? demand : 100;
+      daikin_set_i_e (err, demand, new_demand);
+      if (!err)
+      {
+         jo_t s = jo_object_alloc();
+         jo_int (s, "demand", new_demand);
+         revk_settings_store (s, NULL, 1);
+         jo_free (&s);
+      }
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2668,12 +2676,33 @@ legacy_web_set_special_mode (httpd_req_t * req)
       {
       case 1:                  // powerful
          err = daikin_set_v (powerful, mode);
+         if (!err)
+         {
+            jo_t s = jo_object_alloc();
+            jo_bool (s, "powerful", mode);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+         }
          break;
       case 2:                  // eco
          err = daikin_set_v (econo, mode);
+         if (!err)
+         {
+            jo_t s = jo_object_alloc();
+            jo_bool (s, "econo", mode);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+         }
          break;
       case 3:                  // streamer
          err = daikin_set_v (streamer, mode);
+         if (!err)
+         {
+            jo_t s = jo_object_alloc();
+            jo_bool (s, "streamer", mode);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
+         }
          break;
       default:
          err = "Unknown kind";

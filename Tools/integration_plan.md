@@ -89,3 +89,5 @@ messages so that Faikin mirrors the official modules.
 - [x] `/aircon/get_year_power` and `/aircon/get_week_power` now return
   placeholder statistics so clients receive expected fields.
 - [x] `/aircon/set_holiday` persists the provided parameters for later queries.
+- [x] `/aircon/set_special_mode` and `/aircon/set_demand_control` now
+  store the selected settings for later retrieval.
