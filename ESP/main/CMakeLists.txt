@@ -9,8 +9,8 @@ if(NOT CMAKE_SCRIPT_MODE_FILE)
         DEPENDS ${SETTINGS_DEF} ${REVK_DIR}/settings.def ${REVK_SETTINGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     )
+    set_source_files_properties(settings.c PROPERTIES GENERATED TRUE)
 endif()
-set_source_files_properties(settings.c PROPERTIES GENERATED TRUE)
 
 set(COMPONENT_SRCS "cn_wired_driver.c" "Faikin.c" "bleenv.c" "settings.c")
 set(COMPONENT_REQUIRES "ESP32-RevK")
