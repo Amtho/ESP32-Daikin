@@ -2917,6 +2917,7 @@ legacy_web_set_notify (httpd_req_t * req)
          if (v)
          {
             notify_enabled = parse_bool (v);
+            daikin_set_v_e (err, led, notify_enabled); // mirror notify on LED
             jo_t s = jo_object_alloc();
             jo_int (s, "notify", notify_enabled);
             revk_settings_store (s, NULL, 1);
@@ -2957,11 +2958,13 @@ legacy_web_set_remote_method (httpd_req_t * req)
                strncpy(remote_method, "home only", sizeof(remote_method)-1);
             else
                strncpy(remote_method, v, sizeof(remote_method)-1);
-            remote_method[sizeof(remote_method) - 1] = 0;
-            jo_t s = jo_object_alloc();
-            jo_string (s, "remote_method", remote_method);
-            revk_settings_store (s, NULL, 1);
-            jo_free (&s);
+           remote_method[sizeof(remote_method) - 1] = 0;
+            daikin.remote = strcmp(remote_method, "home only") ? 1 : 0;
+            daikin.status_changed = 1;
+           jo_t s = jo_object_alloc();
+           jo_string (s, "remote_method", remote_method);
+           revk_settings_store (s, NULL, 1);
+           jo_free (&s);
          }
          free (v);
       }

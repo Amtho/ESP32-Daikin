@@ -8,4 +8,6 @@ The following tasks from `AGENTS.md` have been finished:
 - Timer, program and schedule timer values are saved across reboots.
 - Power history endpoints return placeholder data for compatibility.
 - Notification, region and LED settings persist and `/common/set_led` now supports "on"/"off" values.
+- `/common/set_notify` mirrors the setting to the physical LED.
+- `/common/set_remote_method` now toggles remote control mode.
 
