@@ -21,5 +21,6 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 - ESP32-S3 build target available.
 - Timer, program and schedule timer settings now stored persistently.
 - Target, price and remote method updates apply immediately and are saved.
+- Holiday endpoint settings stored for later retrieval.
 
 For questions or larger design changes, open a GitHub issue first.
