@@ -97,8 +97,8 @@ messages so that Faikin mirrors the official modules.
 - [x] Timer, program and scdl timer queries now report the stored
   parameters using their original field names so third-party clients see
   `timer=`, `program=` and `scdltimer=` responses.
-- [x] `/aircon/get_year_power` and `/aircon/get_week_power` now return
-  placeholder statistics so clients receive expected fields.
+- [x] `/aircon/get_year_power` and `/aircon/get_week_power` report
+  energy usage derived from the cumulative Wh counter.
 - [x] `/common/set_led` now updates the LED state via S21 commands when
   hardware is connected.
 - [x] ESP32-S2 and ESP32-S3 build targets are available and select default

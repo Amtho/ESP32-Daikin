@@ -2679,24 +2679,24 @@ static esp_err_t
 legacy_web_get_year_power (httpd_req_t * req)
 {
    /*
-    * The official Daikin modules report monthly usage for the current and
-    * previous year.  We approximate this using the accumulated daily
-    * differences and expose the totals for the last twelve months.
+    * The official modules return power totals for the current and previous
+    * calendar years.  We only track a rolling 12‑month window so the current
+    * and previous year values are derived from the same history array.
     */
    update_power_history();
    jo_t j = legacy_ok ();
    char heat[128] = "";
    for (int i = 0; i < 12; i++)
    {
+      int idx = (last_power_month + 1 + i) % 12;
       char buf[12];
-      sprintf (buf, "%u/", powermonth[i] / 100);
+      sprintf (buf, "%u/", powermonth[idx] / 100);
       strcat (heat, buf);
    }
    if (*heat)
       heat[strlen (heat) - 1] = 0;
    jo_string (j, "curr_year_heat", heat);
-   jo_string (j, "prev_year_heat",
-              "0/0/0/0/0/0/0/0/0/0/0/0");
+   jo_string (j, "prev_year_heat", heat);
    jo_string (j, "curr_year_cool",
               "0/0/0/0/0/0/0/0/0/0/0/0");
    jo_string (j, "prev_year_cool",
