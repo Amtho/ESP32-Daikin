@@ -133,7 +133,9 @@ continue to operate while hardware integration is completed.
 /aircon/get_week_power
 ```
 
-These will be fleshed out with full S21 command support in future updates.
+Hardware support is gradually being implemented.  The timer,
+program and schedule timer endpoints now send the relevant S21
+commands to the air conditioner.
 
 ## Flashing code
 

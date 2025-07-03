@@ -409,6 +409,42 @@ query_timer_state(void)
    daikin_s21_command('F', '3', 0, NULL);
 }
 
+static void
+send_program_command(const char *state)
+{
+   if (!uart_enabled() || !state || !*state)
+      return;
+   char payload[S21_PAYLOAD_LEN] = {0};
+   strncpy(payload, state, S21_PAYLOAD_LEN);
+   daikin_s21_command('D', '4', S21_PAYLOAD_LEN, payload);
+}
+
+static void
+query_program_state(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', '4', 0, NULL);
+}
+
+static void
+send_scdltimer_command(const char *state)
+{
+   if (!uart_enabled() || !state || !*state)
+      return;
+   char payload[S21_PAYLOAD_LEN] = {0};
+   strncpy(payload, state, S21_PAYLOAD_LEN);
+   daikin_s21_command('D', '4', S21_PAYLOAD_LEN, payload);
+}
+
+static void
+query_scdltimer_state(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', '4', 0, NULL);
+}
+
 static uint8_t
 proto_type (void)
 {
@@ -825,6 +861,18 @@ daikin_s21_response (uint8_t cmd, uint8_t cmd2, int len, uint8_t * payload)
          else if (s21.F6.bad && check_length (cmd, cmd2, len, 1, payload))
          {                     // Older units report powerful via G3
             report_bool (powerful, payload[3] & 0x02);
+         }
+         break;
+      case '4':                // 'G4' - program or schedule timer state
+         if (check_length (cmd, cmd2, len, S21_PAYLOAD_LEN, payload))
+         {
+            char state[5];
+            memcpy (state, payload, 4);
+            state[4] = 0;
+            strncpy (program_state, state, sizeof (program_state) - 1);
+            program_state[sizeof (program_state) - 1] = 0;
+            strncpy (scdl_timer_state, state, sizeof (scdl_timer_state) - 1);
+            scdl_timer_state[sizeof (scdl_timer_state) - 1] = 0;
          }
          break;
       case '5':                // 'G5' - swing status
@@ -2860,6 +2908,7 @@ legacy_web_set_target (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_program (httpd_req_t * req)
 {
+   query_program_state();
    jo_t j = legacy_ok ();
    if (*program_state)
       jo_string (j, "program", program_state);
@@ -2884,6 +2933,7 @@ legacy_web_set_program (httpd_req_t * req)
       jo_string (s, "program", program_state);
       revk_settings_store (s, NULL, 1);
       jo_free (&s);
+      send_program_command(program_state);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
@@ -2892,6 +2942,7 @@ legacy_web_set_program (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_scdltimer (httpd_req_t * req)
 {
+   query_scdltimer_state();
    jo_t j = legacy_ok ();
    if (*scdl_timer_state)
       jo_string (j, "scdltimer", scdl_timer_state);
@@ -2916,6 +2967,7 @@ legacy_web_set_scdltimer (httpd_req_t * req)
       jo_string (s, "scdltimer", scdl_timer_state);
       revk_settings_store (s, NULL, 1);
       jo_free (&s);
+      send_scdltimer_command(scdl_timer_state);
       jo_free (&j);
    }
    return legacy_simple_response (req, err);
