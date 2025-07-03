@@ -105,3 +105,6 @@ messages so that Faikin mirrors the official modules.
   UART pins for those boards.
 - [x] Stored settings for remote method, notify, target, price and timers are
   loaded at startup so changes persist across reboots.
+- [x] Fixed `/aircon/get_year_power` to return the `prev_year_cool` field
+  using the correct name so clients match the official API.
+
