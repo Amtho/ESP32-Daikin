@@ -314,8 +314,16 @@ update_power_history(void)
       powermonth[last_power_month] += diff;
       last_power_day = tm.tm_yday;
       last_power_Wh = daikin.Wh;
-      save_power_history();
-   }
+     save_power_history();
+  }
+}
+
+static void
+query_power_meter(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', 'M', 0, NULL);
 }
 
 static void
@@ -2751,6 +2759,7 @@ legacy_web_get_sensor_info (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_year_power (httpd_req_t * req)
 {
+   query_power_meter();          // Refresh Wh reading from the unit
    /*
     * The official modules return power totals for the current and previous
     * calendar years.  We only track a rolling 12‑month window so the current
@@ -2780,6 +2789,7 @@ legacy_web_get_year_power (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_week_power (httpd_req_t * req)
 {
+   query_power_meter();          // Refresh Wh reading from the unit
    update_power_history();
    jo_t j = legacy_ok();
    jo_string (j, "s_dayw", "0");
