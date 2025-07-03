@@ -99,6 +99,11 @@ If you forget to clone with `--recursive`, run `python setup_submodules.py` (or
 `setup_submodules.bat` on Windows) in the repository root to fetch all the
 required libraries.
 
+Before invoking `idf.py` directly, run `make` once inside the `ESP` directory.
+This compiles the helper tool `revk_settings` and generates the required
+`main/settings.c` and `main/settings.h` files. Without these files CMake will
+fail during `idf.py set-target`.
+
 The code is normally set up to automatically upgrade the software, checking roughtly once a week. You can change this in settings via MQTT.
 
 If you build yourself, you either need no code signing, or your own signing key. This will break auto-updates which try to load my code releases, so you need to adjuist settings `otahost` and `otaauto` accordingly. You can set these in the build config, along with WiFi settings, etc.
