@@ -2,7 +2,10 @@ set(REVK_DIR ${CMAKE_CURRENT_LIST_DIR}/../components/ESP32-RevK)
 set(SETTINGS_DEF ${CMAKE_CURRENT_LIST_DIR}/settings.def)
 set(REVK_SETTINGS ${REVK_DIR}/revk_settings)
 
-if(NOT CMAKE_SCRIPT_MODE_FILE)
+# Skip generation step when this file is parsed by the
+# component_get_requirements.cmake script. That script sets
+# BUILD_PROPERTIES_FILE, so use its absence to detect a real build.
+if(NOT DEFINED BUILD_PROPERTIES_FILE)
     add_custom_command(
         OUTPUT settings.c settings.h
         COMMAND ${REVK_SETTINGS} ${SETTINGS_DEF} -h settings.h -c settings.c
