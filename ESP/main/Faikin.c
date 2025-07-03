@@ -2532,22 +2532,38 @@ legacy_web_register_terminal (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_year_power (httpd_req_t * req)
 {
+   /*
+    * The official Daikin modules report monthly usage for the current and
+    * previous year.  We do not yet track per-month totals so return the
+    * current accumulated Wh value in the first month and zeroes elsewhere.
+    */
    jo_t j = legacy_ok ();
-   jo_stringf (j, "curr_year_heat", "%u/0/0/0/0/0/0/0/0/0/0/0", daikin.Wh / 100);       // Bodge, does not resent each year yet
-   jo_string (j, "prev_year_heat", "0/0/0/0/0/0/0/0/0/0/0/0");
-   jo_string (j, "curr_year_cool", "0/0/0/0/0/0/0/0/0/0/0/0");
-   jo_string (j, "prevyear_cool", "0/0/0/0/0/0/0/0/0/0/0/0");
+   jo_stringf (j, "curr_year_heat",
+               "%u/0/0/0/0/0/0/0/0/0/0/0",
+               daikin.Wh / 100);
+   jo_string (j, "prev_year_heat",
+              "0/0/0/0/0/0/0/0/0/0/0/0");
+   jo_string (j, "curr_year_cool",
+              "0/0/0/0/0/0/0/0/0/0/0/0");
+   jo_string (j, "prevyear_cool",
+              "0/0/0/0/0/0/0/0/0/0/0/0");
    return legacy_send (req, &j);
 }
 
 static esp_err_t
 legacy_web_get_week_power (httpd_req_t * req)
 {
-   // ret=OK,s_dayw=2,week_heat=0/0/0/0/0/0/0/0/0/0/0/0/0/0,week_cool=0/0/0/0/0/0/0/0/0/0/0/0/0/0
-   // Have no idea how to implement it, perhaps the original module keeps some internal statistics.
-   // For now let's just prevent errors in OpenHAB and return an empty OK response
-   // Note all zeroes from my BRP
+   /*
+    * The real controller returns power usage for the last two weeks.  Until we
+    * have proper statistics just return placeholder zero values so that client
+    * applications do not error.
+    */
    jo_t j = legacy_ok ();
+   jo_string (j, "s_dayw", "0");
+   jo_string (j, "week_heat",
+              "0/0/0/0/0/0/0/0/0/0/0/0/0/0");
+   jo_string (j, "week_cool",
+              "0/0/0/0/0/0/0/0/0/0/0/0/0/0");
    return legacy_send (req, &j);
 }
 
