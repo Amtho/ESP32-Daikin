@@ -99,6 +99,10 @@ If you forget to clone with `--recursive`, run `python setup_submodules.py` (or
 `setup_submodules.bat` on Windows) in the repository root to fetch all the
 required libraries.
 
+When building on Windows you also need a POSIX environment like MSYS2 or
+Cygwin installed. Ensure the `gcc` compiler from that environment is available
+in your `PATH` so `build.bat` can compile the helper tools.
+
 Before invoking `idf.py` directly, run `make` once inside the `ESP` directory.
 This compiles the helper tool `revk_settings` and generates the required
 `main/settings.c` and `main/settings.h` files. Without these files CMake will
