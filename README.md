@@ -101,7 +101,11 @@ required libraries.
 
 When building on Windows you also need a POSIX environment like MSYS2 or
 Cygwin installed. Ensure the `gcc` compiler from that environment is available
-in your `PATH` so `build.bat` can compile the helper tools.
+in your `PATH` so `build.bat` can compile the helper tools.  The helper tool
+`revk_settings` also depends on the [libpopt](https://github.com/rpm-software-management/popt)
+library.  Install the corresponding `popt` development package (e.g.
+`pacman -S mingw-w64-x86_64-popt` on MSYS2 or `libpopt-dev` on Debian
+derivatives) so `popt.h` is available during compilation.
 
 Before invoking `idf.py` directly, run `make` once inside the `ESP` directory.
 This compiles the helper tool `revk_settings` and generates the required
