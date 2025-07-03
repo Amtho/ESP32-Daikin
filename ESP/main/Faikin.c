@@ -2573,7 +2573,7 @@ legacy_web_get_timer (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();          // No timer functionality yet
    if (*timer_state)
-      jo_string (j, "state", timer_state);
+      jo_string (j, "timer", timer_state);
    return legacy_send (req, &j);
 }
 
@@ -2676,7 +2676,7 @@ legacy_web_get_program (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();
    if (*program_state)
-      jo_string (j, "state", program_state);
+      jo_string (j, "program", program_state);
    return legacy_send (req, &j);
 }
 
@@ -2708,7 +2708,7 @@ legacy_web_get_scdltimer (httpd_req_t * req)
 {
    jo_t j = legacy_ok ();
    if (*scdl_timer_state)
-      jo_string (j, "state", scdl_timer_state);
+      jo_string (j, "scdltimer", scdl_timer_state);
    return legacy_send (req, &j);
 }
 

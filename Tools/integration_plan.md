@@ -94,6 +94,9 @@ messages so that Faikin mirrors the official modules.
 - [x] `/aircon/get_timer`, `/aircon/set_timer`, `/aircon/get_program`,
   `/aircon/set_program` and `/aircon/get_scdltimer`/`set_scdltimer`
   preserve the most recently supplied values.
+- [x] Timer, program and scdl timer queries now report the stored
+  parameters using their original field names so third-party clients see
+  `timer=`, `program=` and `scdltimer=` responses.
 - [x] `/aircon/get_year_power` and `/aircon/get_week_power` now return
   placeholder statistics so clients receive expected fields.
 - [x] `/common/set_led` now updates the LED state via S21 commands when
