@@ -15,6 +15,7 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 - Stub handlers for additional HTTP API endpoints in place.
 - Target and price endpoints persist values for later retrieval.
 - ESP32-S2 build target available.
+- Default UART pins configured for ESP32-S2 boards.
 - Notification, region and LED endpoints persist settings.
 - Timer and program endpoints remember the last supplied parameters.
 - Power history endpoints provide placeholder values for compatibility.
