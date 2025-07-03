@@ -461,6 +461,34 @@ query_led_state(void)
    daikin_s21_command('F', '6', 0, NULL);
 }
 
+static void
+send_remote_method_command(void)
+{
+   if (!uart_enabled())
+      return;
+   char payload[S21_PAYLOAD_LEN] = {0};
+   payload[0] = strcmp(remote_method, "home only") ? '1' : '0';
+   daikin_s21_command('D', '8', S21_PAYLOAD_LEN, payload);
+}
+
+static void
+query_remote_method_state(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', '8', 0, NULL);
+}
+
+static void
+send_region_command(const char *code)
+{
+   if (!uart_enabled() || !code || !*code)
+      return;
+   char payload[S21_PAYLOAD_LEN] = {0};
+   strncpy(payload, code, S21_PAYLOAD_LEN);
+   daikin_s21_command('D', '9', S21_PAYLOAD_LEN, payload);
+}
+
 static uint8_t
 proto_type (void)
 {
@@ -3047,6 +3075,7 @@ legacy_web_set_notify (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_remote_method (httpd_req_t * req)
 {
+   query_remote_method_state();
    jo_t j = legacy_ok ();          // Current remote access policy
    jo_string (&j, "method", remote_method);
    return legacy_send (req, &j);
@@ -3079,8 +3108,9 @@ legacy_web_set_remote_method (httpd_req_t * req)
            jo_string (s, "remote_method", remote_method);
            revk_settings_store (s, NULL, 1);
            jo_free (&s);
-         }
-         free (v);
+           send_remote_method_command();
+        }
+        free (v);
       }
       jo_free (&j);
    }
@@ -3107,8 +3137,9 @@ legacy_web_set_regioncode (httpd_req_t * req)
             jo_string (s, "region", region);
             revk_settings_store (s, NULL, 1);
             jo_free (&s);
-         }
-         free (v);
+           send_region_command(region);
+        }
+        free (v);
       }
       jo_free (&j);
    }
