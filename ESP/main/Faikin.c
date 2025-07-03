@@ -958,6 +958,11 @@ daikin_s21_response (uint8_t cmd, uint8_t cmd2, int len, uint8_t * payload)
          if (check_length (cmd, cmd2, len, 2, payload))
          {
             daikin.protocol_ver = payload[1] & (~0x30);
+            if (payload[0] == '1')
+               strncpy (remote_method, "anywhere", sizeof (remote_method) - 1);
+            else
+               strncpy (remote_method, "home only", sizeof (remote_method) - 1);
+            remote_method[sizeof (remote_method) - 1] = 0;
          }
          break;
       case '9':
