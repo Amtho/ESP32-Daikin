@@ -19,5 +19,7 @@ avoid making unrelated changes. Changes should be submitted via pull request.
 - Timer and program endpoints remember the last supplied parameters.
 - Power history endpoints provide placeholder values for compatibility.
 - ESP32-S3 build target available.
+- Timer, program and schedule timer settings now stored persistently.
+- Target, price and remote method updates apply immediately and are saved.
 
 For questions or larger design changes, open a GitHub issue first.
