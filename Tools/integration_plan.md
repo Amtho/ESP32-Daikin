@@ -91,3 +91,5 @@ messages so that Faikin mirrors the official modules.
 - [x] `/aircon/set_holiday` persists the provided parameters for later queries.
 - [x] `/aircon/set_special_mode` and `/aircon/set_demand_control` now
   store the selected settings for later retrieval.
+- [x] `/common/set_led` now updates the LED state via S21 commands when
+  hardware is connected.

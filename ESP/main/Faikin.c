@@ -2994,6 +2994,7 @@ legacy_web_set_led (httpd_req_t * req)
          if (v)
          {
             led_state = atoi (v) ? 1 : 0;
+            daikin_set_v_e (err, led, led_state);
             jo_t s = jo_object_alloc();
             jo_int (s, "led", led_state);
             revk_settings_store (s, NULL, 1);
