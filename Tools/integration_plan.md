@@ -27,6 +27,12 @@ To improve compatibility we added stub handlers for the missing endpoints.  They
 
 These stubs provide a foundation for future development.  Implementing full behaviour will require referencing hardware capabilities and extending the control logic in `Faikin.c`.
 
+**Important:** Only implement endpoints that are known from the official Daikin
+modules.  The list above mirrors the API documented at
+[daikin-control](https://github.com/Amtho/daikin-control).  Avoid adding new
+URLs until they are verified to exist on the real hardware so that third party
+clients remain compatible.
+
 ## Task breakdown
 
 The [S21 protocol documentation](../Manuals/S21.md) describes how values are
