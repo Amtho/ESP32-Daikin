@@ -2792,8 +2792,13 @@ legacy_web_set_remote_method (httpd_req_t * req)
          char *v = jo_strdup (j);
          if (v)
          {
-            strncpy (remote_method, v, sizeof (remote_method) - 1);
-            remote_method[sizeof (remote_method) - 1] = 0;
+            if (!strcmp(v, "1") || !strcasecmp(v, "anywhere"))
+               strncpy(remote_method, "anywhere", sizeof(remote_method)-1);
+            else if (!strcmp(v, "0") || !strcasecmp(v, "home only") || !strcasecmp(v, "home"))
+               strncpy(remote_method, "home only", sizeof(remote_method)-1);
+            else
+               strncpy(remote_method, v, sizeof(remote_method)-1);
+            remote_method[sizeof(remote_method) - 1] = 0;
             jo_t s = jo_object_alloc();
             jo_string (s, "remote_method", remote_method);
             revk_settings_store (s, NULL, 1);
