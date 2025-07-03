@@ -308,6 +308,73 @@ update_power_history(void)
    }
 }
 
+static void
+load_legacy_settings(void)
+{
+   revk_settings_t *s;
+   char *v;
+
+   if ((s = revk_settings_find("remote_method", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      strncpy(remote_method, v, sizeof(remote_method) - 1);
+      remote_method[sizeof(remote_method) - 1] = 0;
+      free(v);
+   }
+   if ((s = revk_settings_find("notify", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      notify_enabled = atoi(v) ? 1 : 0;
+      free(v);
+   }
+   if ((s = revk_settings_find("target", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      target_temp = atof(v);
+      free(v);
+   }
+   if ((s = revk_settings_find("price", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      energy_price = atof(v);
+      free(v);
+   }
+   if ((s = revk_settings_find("region", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      strncpy(region, v, sizeof(region) - 1);
+      region[sizeof(region) - 1] = 0;
+      free(v);
+   }
+   if ((s = revk_settings_find("led", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      led_state = atoi(v) ? 1 : 0;
+      free(v);
+   }
+   if ((s = revk_settings_find("timer", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      strncpy(timer_state, v, sizeof(timer_state) - 1);
+      timer_state[sizeof(timer_state) - 1] = 0;
+      free(v);
+   }
+   if ((s = revk_settings_find("program", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      strncpy(program_state, v, sizeof(program_state) - 1);
+      program_state[sizeof(program_state) - 1] = 0;
+      free(v);
+   }
+   if ((s = revk_settings_find("scdltimer", NULL)) &&
+       (v = revk_settings_text(s, 0, NULL)))
+   {
+      strncpy(scdl_timer_state, v, sizeof(scdl_timer_state) - 1);
+      scdl_timer_state[sizeof(scdl_timer_state) - 1] = 0;
+      free(v);
+   }
+}
+
 static int
 uart_enabled (void)
 {
@@ -3582,6 +3649,7 @@ app_main ()
    revk_start ();
 
    load_power_history();
+   load_legacy_settings();
 
    ESP_LOGD (TAG, "USB %d", usb_serial_jtag_is_connected ());
    if (tx.set && rx.set)
