@@ -182,7 +182,6 @@ static uint8_t led_state = 1;         // Stored LED setting for legacy API
 static char timer_state[96] = "";     // Stored /set_timer parameters
 static char program_state[96] = "";   // Stored /set_program parameters
 static char scdl_timer_state[96] = "";// Stored /set_scdltimer parameters
-static char holiday_state[96] = "";   // Stored /set_holiday parameters
 
 // Energy history for the last two weeks (14 entries of daily usage)
 static uint32_t powerweek[14] = {0};
@@ -2279,67 +2278,6 @@ legacy_simple_response (httpd_req_t * req, const char *err)
    return legacy_send (req, &j);
 }
 
-static esp_err_t
-legacy_web_set_holiday (httpd_req_t * req)
-{
-   const char *err = NULL;
-   jo_t j = revk_web_query (req);
-   if (!j)
-      err = "Query failed";
-   else
-   {
-      size_t len = httpd_req_get_url_query_len (req);
-      if (len >= sizeof (holiday_state))
-         len = sizeof (holiday_state) - 1;
-      if (httpd_req_get_url_query_str (req, holiday_state, len + 1) != ESP_OK)
-         holiday_state[0] = 0;
-      jo_t s = jo_object_alloc();
-      jo_string (s, "holiday", holiday_state);
-      revk_settings_store (s, NULL, 1);
-      jo_free (&s);
-      jo_free (&j);
-   }
-   return legacy_simple_response (req, err);
-}
-
-static esp_err_t
-legacy_web_set_demand_control (httpd_req_t * req)
-{
-   const char *err = NULL;
-   jo_t j = revk_web_query (req);
-   if (!j)
-      err = "Query failed";
-   else
-   {
-      int on = 0,
-         demand = 100;
-      if (jo_find (j, "en_demand"))
-      {
-         char *v = jo_strdup (j);
-         if (v)
-            on = atoi (v);
-         free (v);
-      }
-      if (jo_find (j, "max_pow"))
-      {
-         char *v = jo_strdup (j);
-         if (v)
-            demand = atoi (v);
-         free (v);
-      }
-      int new_demand = on ? demand : 100;
-      daikin_set_i_e (err, demand, new_demand);
-      if (!err)
-      {
-         jo_t s = jo_object_alloc();
-         jo_int (s, "demand", new_demand);
-         revk_settings_store (s, NULL, 1);
-         jo_free (&s);
-      }
-      jo_free (&j);
-   }
-   return legacy_simple_response (req, err);
-}
 
 static void
 jo_protocol_version (jo_t j)
@@ -2579,17 +2517,6 @@ legacy_web_get_sensor_info (httpd_req_t * req)
 }
 
 static esp_err_t
-legacy_web_register_terminal (httpd_req_t * req)
-{
-   // This is called with "?key=<security_key>" parameter if any other URL
-   // responds with 403. It's supposed that we remember our client and enable access.
-   // We don't support authentication currently, so let's just return OK
-   // However, it could be a nice idea to have in future
-   jo_t j = legacy_ok ();
-   return legacy_send (req, &j);
-}
-
-static esp_err_t
 legacy_web_get_year_power (httpd_req_t * req)
 {
    /*
@@ -2639,78 +2566,6 @@ legacy_web_get_week_power (httpd_req_t * req)
    return legacy_send (req, &j);
 }
 
-static esp_err_t
-legacy_web_set_special_mode (httpd_req_t * req)
-{
-   const char *err = NULL;
-   jo_t j = revk_web_query (req);
-   if (!j)
-      err = "Query failed";
-   else
-   {
-      int kind = 0,
-         mode = 0;
-      if (jo_find (j, "spmode_kind"))
-      {
-         char *v = jo_strdup (j);
-         if (v)
-            kind = atoi (v);
-         free (v);
-      }
-      if (jo_find (j, "set_spmode"))
-      {
-         char *v = jo_strdup (j);
-         if (v)
-            mode = atoi (v);
-         free (v);
-      }
-      if (jo_find (j, "en_streamer"))
-      {
-         char *v = jo_strdup (j);
-         if (v)
-            mode = atoi (v);
-         free (v);
-         kind = 3;
-      }
-      switch (kind)
-      {
-      case 1:                  // powerful
-         err = daikin_set_v (powerful, mode);
-         if (!err)
-         {
-            jo_t s = jo_object_alloc();
-            jo_bool (s, "powerful", mode);
-            revk_settings_store (s, NULL, 1);
-            jo_free (&s);
-         }
-         break;
-      case 2:                  // eco
-         err = daikin_set_v (econo, mode);
-         if (!err)
-         {
-            jo_t s = jo_object_alloc();
-            jo_bool (s, "econo", mode);
-            revk_settings_store (s, NULL, 1);
-            jo_free (&s);
-         }
-         break;
-      case 3:                  // streamer
-         err = daikin_set_v (streamer, mode);
-         if (!err)
-         {
-            jo_t s = jo_object_alloc();
-            jo_bool (s, "streamer", mode);
-            revk_settings_store (s, NULL, 1);
-            jo_free (&s);
-         }
-         break;
-      default:
-         err = "Unknown kind";
-      }
-      jo_free (&j);
-   }
-   return legacy_simple_response (req, err);
-}
 
 // Stub handlers for additional Daikin HTTP API endpoints
 static esp_err_t
@@ -3692,9 +3547,6 @@ app_main ()
             register_get_uri ("/aircon/get_control_info", legacy_web_get_control_info);
             register_get_uri ("/aircon/set_control_info", legacy_web_set_control_info);
             register_get_uri ("/aircon/get_sensor_info", legacy_web_get_sensor_info);
-            register_get_uri ("/common/register_terminal", legacy_web_register_terminal);
-            register_get_uri ("/aircon/get_year_power_ex", legacy_web_get_year_power);
-            register_get_uri ("/aircon/get_week_power_ex", legacy_web_get_week_power);
             register_get_uri ("/aircon/get_year_power", legacy_web_get_year_power_alias);
             register_get_uri ("/aircon/get_week_power", legacy_web_get_week_power_alias);
             register_get_uri ("/common/get_remote_method", legacy_web_get_remote_method);
@@ -3714,9 +3566,6 @@ app_main ()
             register_get_uri ("/common/set_regioncode", legacy_web_set_regioncode);
             register_get_uri ("/common/set_led", legacy_web_set_led);
             register_get_uri ("/common/reboot", legacy_web_reboot);
-            register_get_uri ("/aircon/set_special_mode", legacy_web_set_special_mode);
-            register_get_uri ("/aircon/set_demand_control", legacy_web_set_demand_control);
-            register_get_uri ("/aircon/set_holiday", legacy_web_set_holiday);
          }
          // When adding, update config.max_uri_handlers
       }
