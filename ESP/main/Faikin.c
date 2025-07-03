@@ -183,6 +183,15 @@ static char timer_state[96] = "";     // Stored /set_timer parameters
 static char program_state[96] = "";   // Stored /set_program parameters
 static char scdl_timer_state[96] = "";// Stored /set_scdltimer parameters
 
+static int
+parse_bool (const char *v)
+{
+   if (!v)
+      return 0;
+   return (!strcasecmp (v, "1") || !strcasecmp (v, "true") ||
+           !strcasecmp (v, "on")) ? 1 : 0;
+}
+
 // Energy history for the last two weeks (14 entries of daily usage)
 static uint32_t powerweek[14] = {0};
 static uint32_t powermonth[12] = {0};
@@ -324,7 +333,7 @@ load_legacy_settings(void)
    if ((s = revk_settings_find("notify", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      notify_enabled = atoi(v) ? 1 : 0;
+      notify_enabled = parse_bool(v);
       free(v);
    }
    if ((s = revk_settings_find("target", NULL)) &&
@@ -349,7 +358,7 @@ load_legacy_settings(void)
    if ((s = revk_settings_find("led", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      led_state = atoi(v) ? 1 : 0;
+      led_state = parse_bool(v);
       free(v);
    }
    if ((s = revk_settings_find("timer", NULL)) &&
@@ -2907,7 +2916,7 @@ legacy_web_set_notify (httpd_req_t * req)
          char *v = jo_strdup (j);
          if (v)
          {
-            notify_enabled = atoi (v) ? 1 : 0;
+            notify_enabled = parse_bool (v);
             jo_t s = jo_object_alloc();
             jo_int (s, "notify", notify_enabled);
             revk_settings_store (s, NULL, 1);
@@ -3003,7 +3012,7 @@ legacy_web_set_led (httpd_req_t * req)
          char *v = jo_strdup (j);
          if (v)
          {
-            led_state = atoi (v) ? 1 : 0;
+            led_state = parse_bool (v);
             daikin_set_v_e (err, led, led_state);
             jo_t s = jo_object_alloc();
             jo_int (s, "led", led_state);
