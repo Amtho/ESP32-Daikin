@@ -41,7 +41,9 @@ settings.h: main/settings.h
 	@true
 
 components/ESP32-RevK/revk_settings: components/ESP32-RevK/revk_settings.c
-	make -C components/ESP32-RevK revk_settings
+	@set -e; \
+	if gcc -O -o $@ $< -g -Wall --std=gnu99 -lpopt; then :; \
+	else gcc -O -o $@ $< -g -Wall --std=gnu99 libpopt.a; fi
 
 components/ESP32-RevK/idfmon: components/ESP32-RevK/idfmon.c
 	make -C components/ESP32-RevK idfmon
