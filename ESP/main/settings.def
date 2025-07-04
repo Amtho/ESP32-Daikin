@@ -3,8 +3,8 @@ bit	debug				.live					// Debug (extra messages and list replies in one long mes
 bit	debughex			.live					// Debug in hex
 bit	snoop									// Listen only (for debugging)
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-gpio    tx      -48                                                            // Tx
-gpio    rx      -34                                                            // Rx
+gpio    tx      26                                                     // Tx
+gpio    rx      27                                                     // Rx
 bit	livestatus			.live					// Send status messages in real time
 bit	fixstatus								// Send status as fixed values not array
 
@@ -117,13 +117,13 @@ u32	t.sample	900							// Sample period for making adjustments
 u32	t.control	600							// Control messages timeout
 
 #ifdef  CONFIG_IDF_TARGET_ESP32S3
-gpio	tx	-48								// Tx
-gpio	rx	-34								// Rx
+gpio    tx      26                                                     // Tx
+gpio    rx      27                                                     // Rx
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-gpio    tx      -48                                                            // Tx
-gpio    rx      -34                                                            // Rx
+gpio    tx      26                                                     // Tx
+gpio    rx      27                                                     // Rx
 #else
-gpio    tx      26								// Tx
-gpio    rx      27								// Rx
+gpio    tx      26                                                     // Tx
+gpio    rx      27                                                     // Rx
 #endif
 
