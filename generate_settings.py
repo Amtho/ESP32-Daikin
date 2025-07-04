@@ -30,7 +30,7 @@ def main():
     # ensure submodules present
     sub = ROOT / "setup_submodules.py"
     if sub.exists():
-        run(["python3", str(sub)])
+        run(["python", str(sub)])
 
     build_tool()
 
