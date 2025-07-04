@@ -4,7 +4,6 @@
 static const char TAG[] = "Faikin";
 
 #include "revk.h"
-#include "../components/ESP32-RevK/revk_settings.c"
 #include "esp_sleep.h"
 #include "esp_task_wdt.h"
 #include <driver/gpio.h>
