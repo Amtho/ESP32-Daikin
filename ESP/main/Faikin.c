@@ -493,6 +493,25 @@ send_region_command(const char *code)
    daikin_s21_command('D', '9', S21_PAYLOAD_LEN, payload);
 }
 
+static void
+send_price_command(void)
+{
+   if (!uart_enabled())
+      return;
+   char payload[S21_PAYLOAD_LEN] = {0};
+   int p = lroundf(energy_price * 1000.0f);
+   snprintf(payload, sizeof(payload), "%04d", p);
+   daikin_s21_command('D', '2', S21_PAYLOAD_LEN, payload);
+}
+
+static void
+query_price_state(void)
+{
+   if (!uart_enabled())
+      return;
+   daikin_s21_command('F', '2', 0, NULL);
+}
+
 static uint8_t
 proto_type (void)
 {
@@ -895,6 +914,18 @@ daikin_s21_response (uint8_t cmd, uint8_t cmd2, int len, uint8_t * payload)
                else
                   report_uint8 (fan, 0);        // Auto as fan too fast to be quiet mode
             }
+         }
+         break;
+      case '2':                // 'G2' - energy price
+         if (check_length (cmd, cmd2, len, S21_PAYLOAD_LEN, payload))
+         {
+            int p = (payload[0]-'0')*1000 + (payload[1]-'0')*100 +
+                    (payload[2]-'0')*10 + (payload[3]-'0');
+            energy_price = p / 1000.0f;
+            jo_t s = jo_object_alloc();
+            jo_stringf (s, "price", "%0.3f", energy_price);
+            revk_settings_store (s, NULL, 1);
+            jo_free (&s);
          }
          break;
       case '3':                // 'G3' - timer status or alternative to G6
@@ -2897,6 +2928,7 @@ legacy_web_set_timer (httpd_req_t * req)
 static esp_err_t
 legacy_web_get_price (httpd_req_t * req)
 {
+   query_price_state();
    jo_t j = legacy_ok ();
    jo_stringf (j, "price", "%0.3f", energy_price);
    return legacy_send (req, &j);
@@ -2921,6 +2953,7 @@ legacy_web_set_price (httpd_req_t * req)
             jo_stringf (s, "price", "%0.3f", energy_price);
             revk_settings_store (s, NULL, 1);
             jo_free (&s);
+            send_price_command();
             free (v);
          }
       }
