@@ -15,7 +15,9 @@ if(NOT DEFINED BUILD_PROPERTIES_FILE)
     set_source_files_properties(settings.c PROPERTIES GENERATED TRUE)
 endif()
 
-set(COMPONENT_SRCS "cn_wired_driver.c" "Faikin.c" "bleenv.c" "settings.c")
-set(COMPONENT_REQUIRES "ESP32-RevK")
-set(COMPONENT_EMBED_FILES "favicon.ico" "apple-touch-icon.png")
-register_component()
+idf_component_register(
+    SRCS "cn_wired_driver.c" "Faikin.c" "bleenv.c" "settings.c"
+    INCLUDE_DIRS "." "../include"
+    REQUIRES ESP32-RevK
+    EMBED_FILES "favicon.ico" "apple-touch-icon.png"
+)
