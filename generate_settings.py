@@ -23,7 +23,13 @@ def build_tool():
         str(COMPONENT / "revk_settings.c"),
         "-g", "-Wall", "--std=gnu99", "-lpopt",
     ]
-    run(cmd, cwd=str(COMPONENT))
+    try:
+        run(cmd, cwd=str(COMPONENT))
+    except subprocess.CalledProcessError:
+        # Fall back to bundled static library if system libpopt is unavailable
+        popt_lib = ROOT / "ESP" / "libpopt.a"
+        cmd[-1] = str(popt_lib)
+        run(cmd, cwd=str(COMPONENT))
 
 
 def main():
