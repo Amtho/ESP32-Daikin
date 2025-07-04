@@ -3,8 +3,8 @@
 
 static const char TAG[] = "Faikin";
 
-#include "C:\Users\marce\Documents\GitHub\ESP32-Daikin\ESP\components\ESP32-RevK\include\revk.h"
-#include "C:\Users\marce\Documents\GitHub\ESP32-Daikin\ESP\components\ESP32-RevK\revk_settings.c"
+#include "revk.h"
+#include "revk_settings.c"
 #include "esp_sleep.h"
 #include "esp_task_wdt.h"
 #include <driver/gpio.h>
