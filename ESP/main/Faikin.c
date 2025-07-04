@@ -4,6 +4,7 @@
 static const char TAG[] = "Faikin";
 
 #include "revk.h"
+#include "settings_lib.h"
 #include "esp_sleep.h"
 #include "esp_task_wdt.h"
 #include <driver/gpio.h>
@@ -197,6 +198,47 @@ parse_bool (const char *v)
            !strcasecmp (v, "on")) ? 1 : 0;
 }
 
+// The current aircon state and stats
+typedef struct
+{
+   SemaphoreHandle_t mutex;     // Control changes
+   uint64_t control_changed;    // Which control fields are being set
+   uint64_t status_known;       // Which fields we know, and hence can control
+   uint8_t control_count;       // How many times we have tried to change control and not worked yet
+   uint32_t statscount;         // Count for b() i(), etc.
+#define b(name)         uint8_t name;uint32_t total##name;
+#define t(name)         float name;float min##name;float total##name;float max##name;uint32_t count##name;
+#define r(name)         float min##name;float max##name;
+#define i(name)         int name;int min##name;int total##name;int max##name;
+#define e(name,values)  uint8_t name;
+#define s(name,len)     char name[len];
+#include "acextras.m"
+   float env_prev;              // Predictive, last period value
+   float env_delta;             // Predictive, diff to last
+   float env_delta_prev;        // Predictive, previous diff
+   uint32_t controlvalid;       // uptime to which auto mode is valid
+   uint32_t sample;             // Last uptime sampled
+   uint32_t countApproaching,
+     countApproachingPrev;      // Count of "approaching temp", and previous sample
+   uint32_t countBeyond,
+     countBeyondPrev;           // Count of "beyond temp", and previous sample
+   uint32_t countTotal,
+     countTotalPrev;            // Count total, and previous sample
+   uint8_t fansaved;            // Saved fan we override at start
+   uint8_t talking:1;           // We are getting answers
+   uint8_t lastheat:1;          // Last heat mode
+   uint8_t status_changed:1;    // Status has changed
+   uint8_t mode_changed:1;      // Status or control has changed for enum or bool
+   uint8_t status_report:1;     // Send status report
+   uint8_t ha_send:1;           // Send HA config
+   uint8_t remote:1;            // Remote control via MQTT
+   uint8_t hysteresis:1;        // Thermostat hysteresis state
+   uint8_t cnresend:2;          // Resends
+   uint8_t action:3;            // hvac_action
+   uint8_t protocol_ver;        // Protocol version
+} daikin_state_t;
+
+static daikin_state_t daikin = { 0 };
 
 // Energy history for the last two weeks (14 entries of daily usage)
 // power usage tracking variables are provided by settings.h
@@ -620,46 +662,8 @@ ble_sensor_enabled (void)
 }
 
 #endif // ELA
+/* daikin_state_t and daikin variable defined earlier */
 
-// The current aircon state and stats
-struct
-{
-   SemaphoreHandle_t mutex;     // Control changes
-   uint64_t control_changed;    // Which control fields are being set
-   uint64_t status_known;       // Which fields we know, and hence can control
-   uint8_t control_count;       // How many times we have tried to change control and not worked yet
-   uint32_t statscount;         // Count for b() i(), etc.
-#define	b(name)		uint8_t	name;uint32_t total##name;
-#define	t(name)		float name;float min##name;float total##name;float max##name;uint32_t count##name;
-#define	r(name)		float min##name;float max##name;
-#define	i(name)		int name;int min##name;int total##name;int max##name;
-#define	e(name,values)	uint8_t name;
-#define	s(name,len)	char name[len];
-#include "acextras.m"
-   float env_prev;              // Predictive, last period value
-   float env_delta;             // Predictive, diff to last
-   float env_delta_prev;        // Predictive, previous diff
-   uint32_t controlvalid;       // uptime to which auto mode is valid
-   uint32_t sample;             // Last uptime sampled
-   uint32_t countApproaching,
-     countApproachingPrev;      // Count of "approaching temp", and previous sample
-   uint32_t countBeyond,
-     countBeyondPrev;           // Count of "beyond temp", and previous sample
-   uint32_t countTotal,
-     countTotalPrev;            // Count total, and previous sample
-   uint8_t fansaved;            // Saved fan we override at start
-   uint8_t talking:1;           // We are getting answers
-   uint8_t lastheat:1;          // Last heat mode
-   uint8_t status_changed:1;    // Status has changed
-   uint8_t mode_changed:1;      // Status or control has changed for enum or bool
-   uint8_t status_report:1;     // Send status report
-   uint8_t ha_send:1;           // Send HA config
-   uint8_t remote:1;            // Remote control via MQTT
-   uint8_t hysteresis:1;        // Thermostat hysteresis state
-   uint8_t cnresend:2;          // Resends
-   uint8_t action:3;            // hvac_action
-   uint8_t protocol_ver;        // Protocol version
-} daikin = { 0 };
 
 enum
 {
