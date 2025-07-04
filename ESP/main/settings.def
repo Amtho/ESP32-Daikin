@@ -2,12 +2,10 @@ bit	dump									// Dump protocol on MQTT for each message
 bit	debug				.live					// Debug (extra messages and list replies in one long message on MQTT)
 bit	debughex			.live					// Debug in hex
 bit	snoop									// Listen only (for debugging)
-#ifdef CONFIG_IDF_TARGET_ESP32S2
-gpio    tx      26                                                     // Tx
-gpio    rx      27                                                     // Rx
-bit	livestatus			.live					// Send status messages in real time
-bit	fixstatus								// Send status as fixed values not array
-
+bit     livestatus                      .live                                  /
+/ Send status messages in real time
+bit     fixstatus                                                              /
+/ Send status as fixed values not array
 bit	web.control	1							// Web based controls
 bit	web.settings	1							// Web based settings
 
