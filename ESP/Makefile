@@ -12,7 +12,7 @@ endif
 
 all:	main/settings.h
 	@echo Make: $(PROJECT_NAME)$(SUFFIX).bin
-	@idf.py build
+	@C:/Users/marce/esp/v5.4.1/esp-idf/tools/idf.py build
 	@cp build/$(PROJECT_NAME).bin $(PROJECT_NAME)$(SUFFIX).bin
 	@cp build/bootloader/bootloader.bin $(PROJECT_NAME)$(SUFFIX)-bootloader.bin
 	@echo Done: $(PROJECT_NAME)$(SUFFIX).bin

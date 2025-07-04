@@ -4,5 +4,8 @@
   ],
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32s3"
-  }
+  },
+  "idf.espIdfPathWin": "C:\\Users\\marce\\esp\\v5.4.1\\esp-idf",
+  "idf.toolsPathWin": "C:\\Users\\marce\\esp\\v5.4.1\\esp-idf\\tools",
+  "idf.pythonInstallPath": "c:\\Users\\marce\\esp\\v5.4.1\\esp-idf\\tools\\tools\\idf-python\\3.11.2\\python.exe"
 }
