@@ -22,6 +22,11 @@ static const char TAG[] = "Faikin";
 #include "daikin_s21.h"
 #include "halib.h"
 
+#include <stdint.h>
+
+static int uart_enabled(void);
+static int daikin_s21_command(uint8_t cmd, uint8_t cmd2, int payload_len, char *payload);
+
 #ifdef  CONFIG_IDF_TARGET_ESP32S3
 #include <driver/usb_serial_jtag.h>
 #else
@@ -177,7 +182,7 @@ static char remote_method[16] = "home only";
 static uint8_t notify_enabled = 0;
 static float target_temp = 21.0;      // Stored target temperature for legacy API
 static float energy_price = 0.0;      // Stored energy price for legacy API
-static char region[8] = "eu";         // Stored region code for legacy API
+// 'region' comes from settings.h as a malloced string
 static uint8_t led_state = 1;         // Stored LED setting for legacy API
 static char timer_state[96] = "";     // Stored /set_timer parameters
 static char program_state[96] = "";   // Stored /set_program parameters
@@ -194,12 +199,7 @@ parse_bool (const char *v)
 
 
 // Energy history for the last two weeks (14 entries of daily usage)
-static uint32_t powerweek[14] = {0};
-static uint32_t powermonth[12] = {0};
-static uint8_t power_week_index = 0;
-static uint32_t last_power_Wh = 0;
-static int last_power_day = -1;
-static int last_power_month = -1;
+// power usage tracking variables are provided by settings.h
 
 /* Track power usage across reboots.  The values are persisted in NVS once per
  * day to avoid excessive flash wear.  Stored keys are:
@@ -216,6 +216,10 @@ load_power_history(void)
 {
    revk_settings_t *s;
    char *v;
+   powerday = UINT16_MAX;
+   powermonthidx = UINT8_MAX;
+   powerwh = 0;
+   powerweekindex = 0;
    for (int i = 0; i < 14; i++)
    {
       int index = i;
@@ -239,25 +243,25 @@ load_power_history(void)
    if ((s = revk_settings_find("power.weekindex", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      power_week_index = atoi(v);
+      powerweekindex = atoi(v);
       free(v);
    }
    if ((s = revk_settings_find("power.day", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      last_power_day = atoi(v);
+      powerday = atoi(v);
       free(v);
    }
    if ((s = revk_settings_find("power.monthidx", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      last_power_month = atoi(v);
+      powermonthidx = atoi(v);
       free(v);
    }
    if ((s = revk_settings_find("power.wh", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      last_power_Wh = strtoul(v, NULL, 0);
+      powerwh = strtoul(v, NULL, 0);
       free(v);
    }
 }
@@ -274,10 +278,10 @@ save_power_history(void)
    for (int i = 0; i < 12; i++)
       jo_int(s, NULL, powermonth[i]);
    jo_close(s);
-   jo_int(s, "power.weekindex", power_week_index);
-   jo_int(s, "power.day", last_power_day);
-   jo_int(s, "power.monthidx", last_power_month);
-   jo_int(s, "power.wh", last_power_Wh);
+   jo_int(s, "power.weekindex", powerweekindex);
+   jo_int(s, "power.day", powerday);
+   jo_int(s, "power.monthidx", powermonthidx);
+   jo_int(s, "power.wh", powerwh);
    revk_settings_store(s, NULL, 1);
    jo_free(&s);
 }
@@ -288,32 +292,32 @@ update_power_history(void)
    time_t now = time(NULL);
    struct tm tm;
    localtime_r(&now, &tm);
-   if (last_power_day == -1)
+   if (powerday == 0xFFFF)
    {
-      last_power_day = tm.tm_yday;
-      last_power_month = tm.tm_mon;
-      last_power_Wh = daikin.Wh;
+      powerday = tm.tm_yday;
+      powermonthidx = tm.tm_mon;
+      powerwh = daikin.Wh;
       return;
    }
-   if (tm.tm_mon != last_power_month)
+   if (tm.tm_mon != powermonthidx)
    {
-      uint32_t diff = (daikin.Wh > last_power_Wh) ? daikin.Wh - last_power_Wh : 0;
-      powermonth[last_power_month] += diff;
-      power_week_index = (power_week_index + 1) % 14;
-      powerweek[power_week_index] = diff;
-      last_power_month = tm.tm_mon;
-      last_power_day = tm.tm_yday;
-      last_power_Wh = daikin.Wh;
+      uint32_t diff = (daikin.Wh > powerwh) ? daikin.Wh - powerwh : 0;
+      powermonth[powermonthidx] += diff;
+      powerweekindex = (powerweekindex + 1) % 14;
+      powerweek[powerweekindex] = diff;
+      powermonthidx = tm.tm_mon;
+      powerday = tm.tm_yday;
+      powerwh = daikin.Wh;
       save_power_history();
    }
-   else if (tm.tm_yday != last_power_day)
+   else if (tm.tm_yday != powerday)
    {
-      uint32_t diff = (daikin.Wh > last_power_Wh) ? daikin.Wh - last_power_Wh : 0;
-      power_week_index = (power_week_index + 1) % 14;
-      powerweek[power_week_index] = diff;
-      powermonth[last_power_month] += diff;
-      last_power_day = tm.tm_yday;
-      last_power_Wh = daikin.Wh;
+      uint32_t diff = (daikin.Wh > powerwh) ? daikin.Wh - powerwh : 0;
+      powerweekindex = (powerweekindex + 1) % 14;
+      powerweek[powerweekindex] = diff;
+      powermonth[powermonthidx] += diff;
+      powerday = tm.tm_yday;
+      powerwh = daikin.Wh;
      save_power_history();
   }
 }
@@ -360,8 +364,8 @@ load_legacy_settings(void)
    if ((s = revk_settings_find("region", NULL)) &&
        (v = revk_settings_text(s, 0, NULL)))
    {
-      strncpy(region, v, sizeof(region) - 1);
-      region[sizeof(region) - 1] = 0;
+      free(region);
+      region = strdup(v);
       free(v);
    }
    if ((s = revk_settings_find("led", NULL)) &&
@@ -2811,9 +2815,9 @@ legacy_web_get_year_power (httpd_req_t * req)
    char heat[128] = "";
    for (int i = 0; i < 12; i++)
    {
-      int idx = (last_power_month + 1 + i) % 12;
+      int idx = (powermonthidx + 1 + i) % 12;
       char buf[12];
-      sprintf (buf, "%u/", powermonth[idx] / 100);
+      sprintf (buf, "%lu/", (unsigned long)(powermonth[idx] / 100));
       strcat (heat, buf);
    }
    if (*heat)
@@ -2837,9 +2841,9 @@ legacy_web_get_week_power (httpd_req_t * req)
    char heat[128] = "";
    for (int i = 0; i < 14; i++)
    {
-      int idx = (power_week_index + 1 + i) % 14;
+      int idx = (powerweekindex + 1 + i) % 14;
       char buf[12];
-      sprintf (buf, "%u/", powerweek[idx] / 100);
+      sprintf (buf, "%lu/", (unsigned long)(powerweek[idx] / 100));
       strcat (heat, buf);
    }
    if (*heat)
@@ -3045,7 +3049,7 @@ legacy_web_get_notify (httpd_req_t * req)
    query_led_state();
    notify_enabled = daikin.led;
    jo_t j = legacy_ok ();          // Report current notify state
-   jo_int (&j, "notify", notify_enabled);
+   jo_int (j, "notify", notify_enabled);
    return legacy_send (req, &j);
 }
 
@@ -3082,7 +3086,7 @@ legacy_web_get_remote_method (httpd_req_t * req)
 {
    query_remote_method_state();
    jo_t j = legacy_ok ();          // Current remote access policy
-   jo_string (&j, "method", remote_method);
+   jo_string (j, "method", remote_method);
    return legacy_send (req, &j);
 }
 
@@ -3136,15 +3140,16 @@ legacy_web_set_regioncode (httpd_req_t * req)
          char *v = jo_strdup (j);
          if (v)
          {
-            strncpy (region, v, sizeof (region) - 1);
-            region[sizeof (region) - 1] = 0;
+            free(region);
+            region = v;
             jo_t s = jo_object_alloc();
             jo_string (s, "region", region);
             revk_settings_store (s, NULL, 1);
             jo_free (&s);
-           send_region_command(region);
-        }
-        free (v);
+            send_region_command(region);
+            v = NULL;
+         }
+         free (v);
       }
       jo_free (&j);
    }
