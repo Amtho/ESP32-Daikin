@@ -17,7 +17,7 @@ endif()
 
 idf_component_register(
     SRCS "cn_wired_driver.c" "Faikin.c" "bleenv.c" "settings.c"
-    INCLUDE_DIRS "." "../include"
+    INCLUDE_DIRS "." "../include" "${REVK_DIR}"
     REQUIRES ESP32-RevK
     EMBED_FILES "favicon.ico" "apple-touch-icon.png"
 )
