@@ -123,7 +123,7 @@ gpio	rx	-34								// Rx
 gpio    tx      -48                                                            // Tx
 gpio    rx      -34                                                            // Rx
 #else
-gpio	tx	-26								// Tx
-gpio	rx	-27								// Rx
+gpio    tx      26								// Tx
+gpio    rx      27								// Rx
 #endif
 
