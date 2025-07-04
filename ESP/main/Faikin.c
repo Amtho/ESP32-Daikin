@@ -542,7 +542,14 @@ send_price_command(void)
       return;
    char payload[S21_PAYLOAD_LEN] = {0};
    int p = lroundf(energy_price * 1000.0f);
-   snprintf(payload, sizeof(payload), "%04d", p);
+   if (p < 0)
+      p = 0;
+   else if (p > 9999)
+      p = 9999;
+   payload[0] = '0' + (p / 1000);
+   payload[1] = '0' + ((p / 100) % 10);
+   payload[2] = '0' + ((p / 10) % 10);
+   payload[3] = '0' + (p % 10);
    daikin_s21_command('D', '2', S21_PAYLOAD_LEN, payload);
 }
 
