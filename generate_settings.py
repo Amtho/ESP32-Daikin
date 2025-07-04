@@ -18,10 +18,17 @@ def build_tool():
     if REVK_SETTINGS.exists():
         return
     # compile the helper tool
+    include_dir = ROOT / "ESP" / "include"
     cmd = [
-        "gcc", "-O", "-o", str(REVK_SETTINGS),
+        "gcc",
+        "-O",
+        "-o", str(REVK_SETTINGS),
         str(COMPONENT / "revk_settings.c"),
-        "-g", "-Wall", "--std=gnu99", "-lpopt",
+        "-g",
+        "-Wall",
+        "--std=gnu99",
+        f"-I{include_dir}",
+        "-lpopt",
     ]
     try:
         run(cmd, cwd=str(COMPONENT))
