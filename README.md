@@ -105,7 +105,9 @@ in your `PATH` so `build.bat` can compile the helper tools.  The helper tool
 `revk_settings` also depends on the [libpopt](https://github.com/rpm-software-management/popt)
 library.  Install the corresponding `popt` development package (e.g.
 `pacman -S mingw-w64-x86_64-popt` on MSYS2 or `libpopt-dev` on Debian
-derivatives) so `popt.h` is available during compilation.
+derivatives) so `popt.h` is available during compilation.  A minimal
+`err.h` shim is bundled under `ESP/include` so building does not require
+the BSD err library.
 
 Before invoking `idf.py` directly, run `python generate_settings.py` in the
 repository root (or `make settings.h` on platforms with `csh` installed).  This
