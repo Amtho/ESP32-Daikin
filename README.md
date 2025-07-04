@@ -107,10 +107,11 @@ library.  Install the corresponding `popt` development package (e.g.
 `pacman -S mingw-w64-x86_64-popt` on MSYS2 or `libpopt-dev` on Debian
 derivatives) so `popt.h` is available during compilation.
 
-Before invoking `idf.py` directly, run `make` once inside the `ESP` directory.
-This compiles the helper tool `revk_settings` and generates the required
-`main/settings.c` and `main/settings.h` files. Without these files CMake will
-fail during `idf.py set-target`.
+Before invoking `idf.py` directly, run `python generate_settings.py` in the
+repository root (or `make settings.h` on platforms with `csh` installed).  This
+script fetches all submodules, builds the `revk_settings` helper tool, and
+creates the required `main/settings.c` and `main/settings.h` files. Without
+these files CMake will fail during `idf.py set-target`.
 
 The code is normally set up to automatically upgrade the software, checking roughtly once a week. You can change this in settings via MQTT.
 
